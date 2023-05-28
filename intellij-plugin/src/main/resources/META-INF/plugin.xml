@@ -1,0 +1,25 @@
+<idea-plugin>
+    <id>com.yandex.yatagan.intellij</id>
+    <name>Dagger Lite</name>
+    <vendor>Yandex LLC</vendor>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.java</depends>
+    <depends>org.jetbrains.kotlin</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <codeInsight.lineMarkerProvider
+                language="UAST"
+                implementationClass="com.yandex.yatagan.intellij.ComponentLineMarkerProvider"
+        />
+
+        <notificationGroup id="YG Notification Group"
+                           displayType="BALLOON"/>
+        <toolWindow
+                factoryClass="com.yandex.yatagan.intellij.ToolWindowFactoryImpl"
+                id="fpp.abr"
+                anchor="right"
+                secondary="true"
+        />
+    </extensions>
+</idea-plugin>

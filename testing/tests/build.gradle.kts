@@ -18,6 +18,8 @@ val compiledTestRuntime: Configuration by configurations.creating {
     extendsFrom(baseTestRuntime)
 }
 
+val intellijTestDriverRuntime : Configuration by configurations.creating
+
 versionsToCheckLoaderCompatibility.forEach { version ->
     configurations.register("kaptForCompatCheck$version")
 }
@@ -64,6 +66,8 @@ dependencies {
     dynamicTestRuntime(project(":api:dynamic"))
     compiledTestRuntime(project(":api:public"))
 
+    intellijTestDriverRuntime(testFixtures(project(":intellij-plugin")))
+
     versionsToCheckLoaderCompatibility.forEach { version ->
         add("kaptForCompatCheck$version", "com.yandex.yatagan:processor-jap:$version")
     }
@@ -87,12 +91,22 @@ val generateCompiledApiClasspath by tasks.registering(ClasspathSourceGeneratorTa
     classpath.set(compiledTestRuntime)
 }
 
+val generateIntellijTestDriverRuntimeClasspath by tasks.registering(ClasspathSourceGeneratorTask::class) {
+    propertyName.set("IntelliJTestDriverClasspath")
+    classpath.set(intellijTestDriverRuntime)
+}
+
 tasks.withType<ClasspathSourceGeneratorTask>().configureEach {
     packageName.set("com.yandex.yatagan.generated")
 }
 
 tasks.named("compileKotlin") {
-    dependsOn(generateDynamicApiClasspath, generateCompiledApiClasspath, genKaptClasspathForCompatCheckTasks)
+    dependsOn(
+        generateDynamicApiClasspath,
+        generateCompiledApiClasspath,
+        generateIntellijTestDriverRuntimeClasspath,
+        genKaptClasspathForCompatCheckTasks,
+    )
 }
 
 val updateGoldenFiles by tasks.registering(Test::class) {
@@ -112,7 +126,7 @@ tasks.test {
 
     // Increasing this will likely get a negative effect on tests performance as kotlin-compilation seems to be shared
     // between compilation invocations and I still haven't found a way to make it in-process.
-    maxParallelForks = 2
+    maxParallelForks = 1
 }
 
 kotlin {
@@ -120,6 +134,7 @@ kotlin {
         main {
             kotlin.srcDir(generateDynamicApiClasspath.map { it.generatedSourceDir })
             kotlin.srcDir(generateCompiledApiClasspath.map { it.generatedSourceDir })
+            kotlin.srcDir(generateIntellijTestDriverRuntimeClasspath.map { it.generatedSourceDir })
             genKaptClasspathForCompatCheckTasks.forEach { taskProvider ->
                 kotlin.srcDir(taskProvider.map { it.generatedSourceDir })
             }

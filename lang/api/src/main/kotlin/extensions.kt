@@ -34,10 +34,10 @@ public val TypeDeclaration.functionsWithCompanion: Sequence<Method>
     }
 
 @OptIn(InternalLangApi::class)
-public inline fun LangModelFactory.Companion.use(factory: LangModelFactory, block: () -> Unit) {
+public inline fun <R> LangModelFactory.Companion.use(factory: LangModelFactory, block: () -> R): R {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     check(delegate.compareAndSet(null, factory))
-    try {
+    return try {
         block()
     } finally {
         check(delegate.compareAndSet(factory, null))
