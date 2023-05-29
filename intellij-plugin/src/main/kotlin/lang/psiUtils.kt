@@ -83,18 +83,27 @@ internal fun PsiType.substituteWith(substitutor: PsiSubstitutor): PsiType {
     return substitutor.substitute(this)!!
 }
 
-internal fun KotlinFqName.findPsiClassKotlinAware(project: Project): PsiClass? {
-    return toUnsafe().findPsiClassKotlinAware(project)
+internal fun KotlinFqName.findPsiClassKotlinAware(
+    project: Project,
+    resolveScope: GlobalSearchScope,
+): PsiClass? {
+    return toUnsafe().findPsiClassKotlinAware(project, resolveScope)
 }
 
-internal fun KotlinClassId.findPsiClassKotlinAware(project: Project): PsiClass? {
-    return FqNameUnsafe(asFqNameString()).findPsiClassKotlinAware(project)
+internal fun KotlinClassId.findPsiClassKotlinAware(
+    project: Project,
+    resolveScope: GlobalSearchScope,
+): PsiClass? {
+    return FqNameUnsafe(asFqNameString()).findPsiClassKotlinAware(project, resolveScope)
 }
 
-internal fun FqNameUnsafe.findPsiClassKotlinAware(project: Project): PsiClass? {
+internal fun FqNameUnsafe.findPsiClassKotlinAware(
+    project: Project,
+    resolveScope: GlobalSearchScope,
+): PsiClass? {
     return with(JavaPsiFacade.getInstance(project)) {
         val name = JavaToKotlinClassMap.mapKotlinToJava(this@findPsiClassKotlinAware)?.asFqNameString() ?: asString()
-        findClass(name, GlobalSearchScope.allScope(project))
+        findClass(name, resolveScope)
     }
 }
 

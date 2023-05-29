@@ -108,7 +108,7 @@ internal class IJAnnotationImpl(
                 is KotlinAnnotationDescriptor -> visitor.visitAnnotation(ImplForKt(value, project, resolveScope))
                 is KotlinNormalClassValue -> {  // Value from `KClassValue`
                     with(JavaPsiFacade.getInstance(project)) {
-                        val clazz = value.classId.findPsiClassKotlinAware(project)
+                        val clazz = value.classId.findPsiClassKotlinAware(project, resolveScope)
                         if (clazz != null) {
                             visitor.visitType(IJTypeImpl(elementFactory.createType(clazz), project))
                         } else {
@@ -124,7 +124,7 @@ internal class IJAnnotationImpl(
                     val classId = value.first as KotlinClassId
                     val name  = value.second as KotlinName
                     with(JavaPsiFacade.getInstance(project)) {
-                        val enumClass = classId.findPsiClassKotlinAware(project)
+                        val enumClass = classId.findPsiClassKotlinAware(project, resolveScope)
                         if (enumClass != null) {
                             visitor.visitEnumConstant(
                                 enum = IJTypeImpl(elementFactory.createType(enumClass), project),
@@ -273,7 +273,7 @@ internal class IJAnnotationImpl(
                 val qualifiedName = annotation.fqName ?: return UnresolvedAnnotationClass("<unresolved>")
                 val qualifiedNameString = qualifiedName.asString()
                 return createCached(qualifiedNameString) {
-                    when(val clazz = qualifiedName.findPsiClassKotlinAware(project)) {
+                    when(val clazz = qualifiedName.findPsiClassKotlinAware(project, resolveScope)) {
                         null -> {
                             val facade = JavaPsiFacade.getInstance(project)
                             val textuallyResolvedClass = facade.findClass(qualifiedNameString, resolveScope)

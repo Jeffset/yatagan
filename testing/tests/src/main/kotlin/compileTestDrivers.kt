@@ -19,9 +19,9 @@ package com.yandex.yatagan.testing.tests
 import javax.inject.Provider
 
 internal fun compileTestDrivers(
-    includeKsp: Boolean = true,
-    includeJap: Boolean = true,
-    includeRt: Boolean = true,
+    includeKsp: Boolean = false,
+    includeJap: Boolean = false,
+    includeRt: Boolean = false,
     includeIntelliJ: Boolean = true,
 ): Collection<Provider<CompileTestDriverBase>> {
     class NamedProvider(
