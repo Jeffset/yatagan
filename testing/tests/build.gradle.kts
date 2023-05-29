@@ -18,7 +18,8 @@ val compiledTestRuntime: Configuration by configurations.creating {
     extendsFrom(baseTestRuntime)
 }
 
-val intellijTestDriverRuntime : Configuration by configurations.creating
+val intellijTestDriverRuntime: Configuration by configurations.creating
+val intellijTestDriverCommandLine: Configuration by configurations.creating
 
 versionsToCheckLoaderCompatibility.forEach { version ->
     configurations.register("kaptForCompatCheck$version")
@@ -56,6 +57,9 @@ dependencies {
     implementation(project(":lang:rt"))
     implementation(libs.poets.java)
 
+    // IntelliJ dependencies
+    implementation(project(path = ":intellij-plugin", configuration = "testDriverRmiApi"))
+
     // Heavy test dependencies
     testImplementation(project(":testing:procedural"))
 
@@ -66,7 +70,8 @@ dependencies {
     dynamicTestRuntime(project(":api:dynamic"))
     compiledTestRuntime(project(":api:public"))
 
-    intellijTestDriverRuntime(testFixtures(project(":intellij-plugin")))
+    intellijTestDriverRuntime(project(path = ":intellij-plugin", configuration = "testDriver"))
+    intellijTestDriverCommandLine(project(path = ":intellij-plugin", configuration = "testDriverCommandLine"))
 
     versionsToCheckLoaderCompatibility.forEach { version ->
         add("kaptForCompatCheck$version", "com.yandex.yatagan:processor-jap:$version")
@@ -127,6 +132,17 @@ tasks.test {
     // Increasing this will likely get a negative effect on tests performance as kotlin-compilation seems to be shared
     // between compilation invocations and I still haven't found a way to make it in-process.
     maxParallelForks = 1
+
+    val intellijTestDriverCommandLine: FileCollection = intellijTestDriverCommandLine
+    inputs.files(intellijTestDriverCommandLine)
+
+    val jdk8 = javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(8)) }
+
+    doFirst {
+        systemProperty("com.yandex.yatagan.intellij-test-driver-command-line",
+            intellijTestDriverCommandLine.singleFile.absolutePath)
+        systemProperty("com.yandex.yatagan.jdk8", jdk8.get().metadata.installationPath)
+    }
 }
 
 kotlin {

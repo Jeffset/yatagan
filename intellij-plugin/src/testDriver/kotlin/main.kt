@@ -15,6 +15,7 @@ import com.yandex.yatagan.core.graph.impl.Options
 import com.yandex.yatagan.core.model.impl.ComponentModel
 import com.yandex.yatagan.intellij.lang.IjModelFactoryImpl
 import com.yandex.yatagan.intellij.lang.TypeDeclaration
+import com.yandex.yatagan.intellij.testing.rmi.IntelliJTestService
 import com.yandex.yatagan.lang.BuiltinAnnotation
 import com.yandex.yatagan.lang.LangModelFactory
 import com.yandex.yatagan.lang.use
@@ -23,40 +24,75 @@ import com.yandex.yatagan.processor.common.LoggerDecorator
 import com.yandex.yatagan.validation.ValidationMessage
 import com.yandex.yatagan.validation.format.format
 import com.yandex.yatagan.validation.impl.validate
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.uast.UFile
 import org.jetbrains.uast.toUElement
 import java.io.File
+import java.rmi.registry.LocateRegistry
+import java.rmi.server.UnicastRemoteObject
+import java.util.concurrent.Executors
 import kotlin.system.exitProcess
 
+private const val TIMEOUT = 5_000L
+
 fun main(args: Array<String>) {
-    // First arg - Project's root directory
-    // Second arg - Project's library classpath
-    val driver = Driver()
-    val output = driver.runTest(
-        projectDir = File(args[0]),
-        apiClasspath = args[1],
-    )
-    println(output)
+    val (apiClasspath, jdkPath) = args
+
+    val executorService = Executors.newSingleThreadExecutor()
+    val dispatcher = executorService.asCoroutineDispatcher()
+    runBlocking(dispatcher) {
+        val driver = async {
+            // Heavy classloading and initialization, has to be async
+            Driver(
+                apiClasspath = apiClasspath,
+                jdkPath = jdkPath,
+            )
+        }
+
+        fun keepAlivePulse() {
+            launch {
+                delay(TIMEOUT)
+            }
+        }
+
+        val service = object : IntelliJTestService {
+            override fun runTest(projectDirectory: String): String {
+                return runBlocking(dispatcher) {
+                    driver.await().runTest(projectDirectory).also {
+                        keepAlivePulse()
+                    }
+                }
+            }
+        }
+
+        LocateRegistry.createRegistry(IntelliJTestService.RMI_PORT)
+            .bind(IntelliJTestService::class.qualifiedName, UnicastRemoteObject.exportObject(service, 0))
+
+        keepAlivePulse()
+    }
     exitProcess(0)
 }
 
 @Suppress("JUnitMalformedDeclaration")
-private class Driver : LightJavaCodeInsightFixtureTestCase() {
+private class Driver(
+    private val apiClasspath: String,
+    private val jdkPath: String,
+) : LightJavaCodeInsightFixtureTestCase(), IntelliJTestService {
     override fun getProjectDescriptor() = object : ProjectDescriptor(LanguageLevel.JDK_1_8) {
         override fun getSdk(): Sdk {
-            val jdkPath = checkNotNull(System.getProperty("java.home"))
             return IdeaTestUtil.createMockJdk("TestJDK", jdkPath)
         }
     }
 
-    fun runTest(
-        projectDir: File,
-        apiClasspath: String,
-    ): String {
+    override fun runTest(projectDirectory: String): String {
         try {
             setUp()
             return runTestImpl(
-                projectDir = projectDir,
+                projectDir = File(projectDirectory),
                 apiClasspath = apiClasspath,
             )
         } finally {

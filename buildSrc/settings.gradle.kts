@@ -19,6 +19,8 @@ dependencyResolutionManagement {
 
             library("poets-java", "com.squareup:javapoet:1.13.0")
             library("poets-kotlin", "com.squareup:kotlinpoet:1.11.0")
+
+            library("kotlinx-coroutines", "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
         }
 
         create("testingLibs") {

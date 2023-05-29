@@ -1,10 +1,7 @@
-import org.jetbrains.intellij.dependency.IdeaDependency
-import org.jetbrains.intellij.dependency.PluginDependency
-
 plugins {
     id("yatagan.base-module")
     id("org.jetbrains.intellij") version "1.13.3"
-    `java-test-fixtures`
+//    `java-test-fixtures`
 }
 
 val yataganVersion: String by extra
@@ -43,22 +40,84 @@ dependencies {
     implementation(project(":core:graph:impl"))
     implementation(project(":validation:impl"))
     implementation(project(":validation:format"))
-
-    testFixturesImplementation(project(":base"))
-    testFixturesImplementation(project(":lang:api"))
-    testFixturesImplementation(project(":lang:compiled"))
-    testFixturesImplementation(project(":core:model:impl"))
-    testFixturesImplementation(project(":core:graph:impl"))
-    testFixturesImplementation(project(":validation:impl"))
-    testFixturesImplementation(project(":validation:format"))
-    testFixturesImplementation(project(":processor:common"))
-
-    testFixturesRuntimeOnly(files(tasks.setupDependencies.flatMap { it.idea.map(IdeaDependency::jarFiles) }))
-    testFixturesRuntimeOnly(files(intellij.pluginDependencies.map { it.map(PluginDependency::jarFiles) }))
 }
 
-afterEvaluate {
-    // TODO: Generate these into a file and consume it in IntelliJTestLauncher.
-    println(tasks.test.get().systemProperties)
-    println(tasks.test.get().jvmArgs)
+// Setup Test Driver Artifact
+val testDriverRmiApi by sourceSets.registering
+val testDriver by sourceSets.registering
+
+val testDriverRmiApiJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("test-driver-rmi-api")
+
+    from(testDriverRmiApi.map { it.output })
+}
+val testDriverJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("test-driver")
+
+    from(testDriver.map { it.output })
+    dependsOn(tasks.jar)
+    dependsOn(testDriverRmiApiJar)
+}
+
+@Suppress("USELESS_ELVIS")
+val generateTestDriverCommandLine by tasks.registering {
+    val outputFile = project.layout.buildDirectory.file("testDriverCommandLine.txt")
+        .also { outputs.file(it) }
+
+    val testSystemProperties = project.provider { tasks.test.get().systemProperties }
+        .also { inputs.property("testSystemProperties", it) }
+    val testJvmArgs = project.provider { tasks.test.get().jvmArgs ?: emptyList() }
+        .also { inputs.property("testJvmArgs", it) }
+    val testExecutable = project.provider { tasks.test.get().executable }
+        .also { inputs.property("testExecutable", it) }
+
+    doFirst {
+        outputFile.get().asFile.writeText(buildString {
+            appendLine(testExecutable.get())
+            testJvmArgs.get().joinTo(this, separator = "\n")
+            appendLine()
+            testSystemProperties.get().entries.joinTo(this, separator = "\n") { (key, value) -> "-D$key=$value" }
+            appendLine()
+        })
+    }
+}
+
+dependencies {
+    "testDriverImplementation"(project(":processor:common"))
+    "testDriverImplementation"(libs.kotlinx.coroutines)
+    "testDriverImplementation"(files(tasks.jar))  // Depend on `main` source set.
+    "testDriverImplementation"(files(testDriverRmiApiJar))  // Depend on `RMI API` source set.
+
+    // Include full test classpath, as IntelliJ gradle plugin configures it for IDE to launch and work properly.
+    "testDriverRuntimeOnly"(tasks.test.map { it.classpath })
+}
+
+configurations {
+    named("testDriverCompileClasspath") {
+        // test driver inherits all `main` dependencies to compile.
+        extendsFrom(compileClasspath.get())
+    }
+
+    register("testDriver") {
+        isCanBeConsumed = true
+        isCanBeResolved = false
+        // Equals full test driver source set runtime classpath.
+        extendsFrom(findByName("testDriverRuntimeClasspath"))
+    }
+
+    register("testDriverRmiApi") {
+        isCanBeConsumed = true
+        isCanBeResolved = false
+    }
+
+    register("testDriverCommandLine") {
+        isCanBeConsumed = true
+        isCanBeResolved = false
+    }
+}
+
+artifacts {
+    add("testDriver", testDriverJar)
+    add("testDriverRmiApi", testDriverRmiApiJar)
+    add("testDriverCommandLine", generateTestDriverCommandLine)
 }
