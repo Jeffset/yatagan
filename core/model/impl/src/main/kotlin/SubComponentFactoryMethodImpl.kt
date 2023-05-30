@@ -18,6 +18,7 @@ package com.yandex.yatagan.core.model.impl
 
 import com.yandex.yatagan.core.model.ComponentFactoryModel
 import com.yandex.yatagan.core.model.SubComponentFactoryMethodModel
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.format.modelRepresentation
@@ -35,6 +36,9 @@ internal class SubComponentFactoryMethodImpl(
     override fun <R> accept(visitor: ComponentFactoryModel.Visitor<R>): R {
         return visitor.visitSubComponentFactoryMethod(this)
     }
+
+    override val langModel: HasPlatformModel
+        get() = factoryMethod
 
     companion object {
         fun canRepresent(method: Method): Boolean {

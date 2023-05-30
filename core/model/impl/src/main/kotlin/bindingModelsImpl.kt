@@ -30,6 +30,7 @@ import com.yandex.yatagan.core.model.ScopeModel
 import com.yandex.yatagan.lang.Annotation
 import com.yandex.yatagan.lang.AnnotationValueVisitorAdapter
 import com.yandex.yatagan.lang.BuiltinAnnotation
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.LangModelFactory
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.lang.getCollectionType
@@ -211,6 +212,9 @@ internal class BindsImpl(
         },
     )
 
+    override val langModel: HasPlatformModel
+        get() = method
+
     companion object {
         fun canRepresent(method: Method): Boolean {
             return method.getAnnotation(BuiltinAnnotation.Binds) != null
@@ -284,6 +288,9 @@ internal class ProvidesImpl(
             }
         },
     )
+
+    override val langModel: HasPlatformModel
+        get() = method
 
     companion object {
         fun canRepresent(method: Method): Boolean {

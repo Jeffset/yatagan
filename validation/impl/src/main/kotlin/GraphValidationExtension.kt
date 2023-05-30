@@ -17,6 +17,7 @@
 package com.yandex.yatagan.validation.impl
 
 import com.yandex.yatagan.core.graph.BindingGraph
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
 import com.yandex.yatagan.validation.format.modelRepresentation
@@ -52,4 +53,7 @@ class GraphValidationExtension(
         modelClassName = "external plugins for",
         representation = graph,
     )
+
+    override val langModel: HasPlatformModel?
+        get() = null
 }

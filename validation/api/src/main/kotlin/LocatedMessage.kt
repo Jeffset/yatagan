@@ -25,5 +25,5 @@ public data class LocatedMessage(
     /**
      * A list of encounter paths, where the [message] was reported.
      */
-    val encounterPaths: List<List<CharSequence>>,
+    val encounterPaths: List<List<MayBeInvalid>>,
 )

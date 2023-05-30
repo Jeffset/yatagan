@@ -114,5 +114,8 @@ internal class RtMethodImpl(
                 asMemberOf = owner,
             ))
         }
+
+        override val platformModel: Any?
+            get() = null  // Before Java 8 there's no platform model for a parameter.
     }
 }

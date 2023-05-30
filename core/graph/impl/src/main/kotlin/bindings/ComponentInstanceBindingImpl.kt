@@ -19,6 +19,7 @@ package com.yandex.yatagan.core.graph.impl.bindings
 import com.yandex.yatagan.core.graph.BindingGraph
 import com.yandex.yatagan.core.graph.bindings.Binding
 import com.yandex.yatagan.core.graph.bindings.ComponentInstanceBinding
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.format.modelRepresentation
 
@@ -36,4 +37,7 @@ internal class ComponentInstanceBindingImpl(
         modelClassName = "component-instance",
         representation = owner,
     )
+
+    override val langModel: HasPlatformModel?
+        get() = null
 }

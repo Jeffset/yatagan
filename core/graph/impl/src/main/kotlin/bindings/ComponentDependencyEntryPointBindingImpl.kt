@@ -21,6 +21,7 @@ import com.yandex.yatagan.core.graph.bindings.Binding
 import com.yandex.yatagan.core.graph.bindings.ComponentDependencyEntryPointBinding
 import com.yandex.yatagan.core.model.ComponentDependencyModel
 import com.yandex.yatagan.core.model.NodeModel
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.format.modelRepresentation
@@ -45,4 +46,7 @@ internal class ComponentDependencyEntryPointBindingImpl(
     override fun compareTo(other: ComponentDependencyEntryPointBindingImpl): Int {
         return getter.compareTo(other.getter)
     }
+
+    override val langModel: HasPlatformModel
+        get() = getter
 }

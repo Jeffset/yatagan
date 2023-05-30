@@ -25,6 +25,7 @@ import com.yandex.yatagan.core.model.ModuleModel
 import com.yandex.yatagan.core.model.MultiBindingDeclarationModel
 import com.yandex.yatagan.core.model.ProvidesBindingModel
 import com.yandex.yatagan.lang.BuiltinAnnotation
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.lang.TypeDeclaration
 import com.yandex.yatagan.lang.functionsWithCompanion
@@ -110,6 +111,9 @@ internal class ModuleModelImpl private constructor(
             validator.child(declaration)
         }
     }
+
+    override val langModel: HasPlatformModel
+        get() = declaration
 
     private object AsProvides : ModuleHostedBindingModel.Visitor<ProvidesBindingModel?> {
         override fun visitBinds(model: BindsBindingModel) = null

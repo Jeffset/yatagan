@@ -14,6 +14,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.util.ProgressWrapper
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.pom.Navigatable
 import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPointerManager
 import com.intellij.ui.dsl.builder.panel
@@ -87,7 +88,9 @@ class ComponentLineMarkerProvider : LineMarkerProviderDescriptor() {
                                     suspend fun Collection<ModuleModel>.warmupModules(): List<ModuleModel> = map {
                                         async {
                                             it.bindings.count()
-                                            it.subcomponents.count()
+                                            it.subcomponents.forEach { sub ->
+                                                sub.modules.warmupModules()
+                                            }
                                             it.multiBindingDeclarations.count()
                                             it.includes.warmupModules()
                                         }
@@ -99,17 +102,17 @@ class ComponentLineMarkerProvider : LineMarkerProviderDescriptor() {
                                         TypeDeclaration(element.parent.toUElement(UClass::class.java)!!)
                                     pi.fraction = 0.1
                                     val component = ComponentModel(declaration)
-                                    pi.fraction = 0.2
+                                    pi.fraction = 0.15
 
                                     component.modules.warmupModules()
 
-                                    pi.fraction = 0.6
+                                    pi.fraction = 0.3
                                     if (component.isRoot) {
                                         val graph = BindingGraph(
                                             root = component,
                                             options = Options(),
                                         )
-                                        pi.fraction = 0.9
+                                        pi.fraction = 0.7
                                         val messages = validate(graph)
                                         messages
                                     } else {
@@ -172,8 +175,18 @@ class ComponentLineMarkerProvider : LineMarkerProviderDescriptor() {
                         }
                         for (encounterPath in message.encounterPaths) {
                             collapsibleGroup("Encountered in") {
-                                for (element in encounterPath) {
-                                    row { text(element.toHtmlString()) }
+                                for (i in encounterPath.indices) {
+                                    val element = encounterPath[i]
+                                    val string = element.toString(childContext = encounterPath.getOrNull(i + 1))
+                                    val psi = element.langModel?.platformModel as? Navigatable
+                                    row {
+                                        if (psi != null) {
+                                            text("in ${string.toHtmlString()} (<a>Navigate...</a>)",
+                                                action = { psi.navigate(false) })
+                                        } else {
+                                            text(string.toHtmlString())
+                                        }
+                                    }
                                 }
                             }
                         }

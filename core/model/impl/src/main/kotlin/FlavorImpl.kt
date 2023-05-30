@@ -19,6 +19,7 @@ package com.yandex.yatagan.core.model.impl
 import com.yandex.yatagan.base.ObjectCache
 import com.yandex.yatagan.core.model.Variant
 import com.yandex.yatagan.lang.BuiltinAnnotation
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
@@ -59,6 +60,9 @@ internal class FlavorImpl private constructor(
             }
         },
     )
+
+    override val langModel: HasPlatformModel?
+        get() = null  // TODO: Maybe use type.declaration?
 
     companion object Factory : ObjectCache<Type, FlavorImpl>() {
         operator fun invoke(type: Type) = createCached(type, ::FlavorImpl)

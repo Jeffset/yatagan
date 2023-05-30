@@ -42,6 +42,7 @@ import com.yandex.yatagan.core.model.ScopeModel
 import com.yandex.yatagan.core.model.Variant
 import com.yandex.yatagan.core.model.accept
 import com.yandex.yatagan.core.model.isNever
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
 import com.yandex.yatagan.validation.format.Strings
@@ -360,4 +361,7 @@ internal class BindingGraphImpl(
         validateNoLoops(this, validator)
         validateAnnotationsRetention(this, validator)
     }
+
+    override val langModel: HasPlatformModel?
+        get() = component.langModel
 }

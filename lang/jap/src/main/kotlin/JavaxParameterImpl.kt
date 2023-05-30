@@ -24,15 +24,15 @@ import javax.lang.model.type.TypeMirror
 import kotlin.LazyThreadSafetyMode.PUBLICATION
 
 internal class JavaxParameterImpl(
-    private val impl: VariableElement,
+    override val platformModel: VariableElement,
     refinedType: TypeMirror,
-) : CtParameterBase(), CtAnnotated by JavaxAnnotatedImpl(impl) {
-    override val name: String get() = impl.simpleName.toString()
+) : CtParameterBase(), CtAnnotated by JavaxAnnotatedImpl(platformModel) {
+    override val name: String get() = platformModel.simpleName.toString()
     override val type: Type by lazy(PUBLICATION) { JavaxTypeImpl(refinedType) }
 
     override fun equals(other: Any?): Boolean {
-        return this === other || (other is JavaxParameterImpl && impl == other.impl)
+        return this === other || (other is JavaxParameterImpl && platformModel == other.platformModel)
     }
 
-    override fun hashCode() = impl.hashCode()
+    override fun hashCode() = platformModel.hashCode()
 }

@@ -19,6 +19,7 @@ package com.yandex.yatagan.core.graph.impl
 import com.yandex.yatagan.core.graph.GraphMemberInjector
 import com.yandex.yatagan.core.model.MembersInjectorModel
 import com.yandex.yatagan.core.model.NodeDependency
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Member
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.validation.MayBeInvalid
@@ -61,6 +62,9 @@ internal class GraphMemberInjectorImpl(
                 }
             }
         )
+
+        override val langModel: HasPlatformModel
+            get() = member
     }
 
     override fun validate(validator: Validator) {
@@ -79,4 +83,7 @@ internal class GraphMemberInjectorImpl(
             append(")")
         },
     )
+
+    override val langModel: HasPlatformModel?
+        get() = impl.langModel
 }

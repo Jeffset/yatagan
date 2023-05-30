@@ -5,7 +5,6 @@ import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiAnnotation
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiModifierListOwner
@@ -13,7 +12,6 @@ import com.intellij.psi.PsiPrimitiveType
 import com.intellij.psi.PsiSubstitutor
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypeVisitor
-import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.psi.impl.PsiClassImplUtil
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
@@ -72,9 +70,6 @@ internal fun PsiModifierListOwner.isAbstract(): Boolean {
 internal fun PsiModifierListOwner.isStatic(): Boolean {
     return hasModifierProperty(PsiModifier.STATIC)
 }
-
-internal val <T : PsiElement> SmartPsiElementPointer<T>.safeElement
-    get() = element ?: throw RemovedPsiError()
 
 internal val PsiClass.allFieldsWithTheirSubstitutors: List<IJPair<PsiField, PsiSubstitutor>>
     get() = PsiClassImplUtil.getAllWithSubstitutorsByMap(this, PsiClassImplUtil.MemberType.FIELD)

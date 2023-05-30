@@ -1,6 +1,7 @@
 package com.yandex.yatagan.intellij.lang
 
 import com.intellij.psi.PsiMethod
+import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiSubstitutor
 import com.yandex.yatagan.lang.Parameter
 import com.yandex.yatagan.lang.Type
@@ -43,18 +44,20 @@ internal class IJFunctionImpl(
         private val index: Int,
     ): CtParameterBase() {
         override val annotations: Sequence<CtAnnotationBase>
-            get() = platformModel.parameterList.getParameter(index)!!.annotations
+            get() = platformModel.annotations
                 .asSequence().map { IJAnnotationImpl(it) }
 
         override val name: String
-            get() = platformModel.parameterList.getParameter(index)!!.name
+            get() = platformModel.name
 
         override val type: Type
             get() = IJTypeImpl(
-                type = platformModel.parameterList.getParameter(index)!!.type
+                type = platformModel.type
                     .substituteWith(substitutor)
                     .substituteWith(owner.substitutor),
-                project = platformModel.project,
+                project = this@IJFunctionImpl.platformModel.project,
             )
+        override val platformModel: PsiParameter
+            get() = this@IJFunctionImpl.platformModel.parameterList.getParameter(index)!!
     }
 }

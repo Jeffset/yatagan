@@ -24,6 +24,7 @@ import com.yandex.yatagan.core.graph.impl.VariantMatch
 import com.yandex.yatagan.core.model.ComponentModel
 import com.yandex.yatagan.core.model.NodeModel
 import com.yandex.yatagan.core.model.isNever
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.format.modelRepresentation
 
@@ -65,4 +66,7 @@ internal class SubComponentBindingImpl(
     override fun <R> accept(visitor: Binding.Visitor<R>): R {
         return visitor.visitSubComponent(this)
     }
+
+    override val langModel: HasPlatformModel?
+        get() = null  // TODO: It'd be nice to point to a subcomponent inclusion
 }

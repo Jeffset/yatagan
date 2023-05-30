@@ -19,7 +19,7 @@ package com.yandex.yatagan.lang
 /**
  * Models a [Callable] parameter.
  */
-public interface Parameter : Annotated {
+public interface Parameter : Annotated, HasPlatformModel {
     /**
      * Parameter name.
      *

@@ -22,6 +22,7 @@ import com.yandex.yatagan.core.graph.impl.bindings.graphConditionScope
 import com.yandex.yatagan.core.graph.impl.bindings.resolveAliasChain
 import com.yandex.yatagan.core.model.ConditionExpression
 import com.yandex.yatagan.core.model.NodeModel
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
 import com.yandex.yatagan.validation.format.Strings
@@ -66,6 +67,7 @@ private object EmptyNonStaticConditionDependencies : NonStaticConditionDependenc
     override val conditionProviders get() = emptySet<Nothing>()
     override fun validate(validator: Validator) = Unit
     override fun toString(childContext: MayBeInvalid?) = ""
+    override val langModel: HasPlatformModel? get() = null
 }
 
 private class NonStaticConditionDependenciesImpl(
@@ -123,4 +125,7 @@ private class NonStaticConditionDependenciesImpl(
             }
         }
     )
+
+    override val langModel: HasPlatformModel?
+        get() = host.langModel
 }

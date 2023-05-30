@@ -22,6 +22,7 @@ import com.yandex.yatagan.core.graph.bindings.AssistedInjectFactoryBinding
 import com.yandex.yatagan.core.graph.bindings.Binding
 import com.yandex.yatagan.core.model.AssistedInjectFactoryModel
 import com.yandex.yatagan.core.model.NodeModel
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
 import com.yandex.yatagan.validation.format.TextColor
@@ -80,4 +81,7 @@ internal class AssistedInjectFactoryBindingImpl(
             }
         },
     )
+
+    override val langModel: HasPlatformModel?
+        get() = model.langModel
 }

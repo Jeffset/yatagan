@@ -26,6 +26,7 @@ import com.yandex.yatagan.core.model.ModuleHostedBindingModel
 import com.yandex.yatagan.core.model.NodeDependency
 import com.yandex.yatagan.core.model.NodeModel
 import com.yandex.yatagan.lang.Annotation
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
@@ -140,4 +141,7 @@ internal class MapBindingImpl(
             append(owner)
         },
     )
+
+    override val langModel: HasPlatformModel?
+        get() = null  // TODO: Maybe at least point to multibinding declaration (Multibinds) if such exists?
 }

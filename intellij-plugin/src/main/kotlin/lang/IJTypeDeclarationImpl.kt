@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElementFactory
 import com.intellij.psi.PsiMethod
+import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiSubstitutor
 import com.yandex.yatagan.base.ObjectCache
 import com.yandex.yatagan.base.memoize
@@ -198,21 +199,22 @@ internal class IJTypeDeclarationImpl private constructor(
             private val index: Int,
         ) : CtParameterBase() {
             override val annotations: Sequence<CtAnnotationBase>
-                get() = this@ConstructorImpl.platformModel.parameterList.getParameter(index)?.annotations
-                    ?.asSequence()?.map { IJAnnotationImpl(it) } ?: emptySequence()
+                get() = platformModel.annotations
+                    .asSequence().map { IJAnnotationImpl(it) }
 
             override val name: String
-                get() = this@ConstructorImpl.platformModel.parameterList.getParameter(index)?.name ?: "p$index"
+                get() = platformModel.name
 
             override val type: Type
-                get() = this@ConstructorImpl.platformModel.parameterList.getParameter(index)?.type?.let { paramType ->
-                    IJTypeImpl(
-                        type = paramType
-                            .substituteWith(substitutor)
-                            .substituteWith(this@IJTypeDeclarationImpl.substitutor),
-                        project = project,
-                    )
-                } ?: throw RemovedPsiError()
+                get() = IJTypeImpl(
+                    type = platformModel.type
+                        .substituteWith(substitutor)
+                        .substituteWith(this@IJTypeDeclarationImpl.substitutor),
+                    project = project,
+                )
+
+            override val platformModel: PsiParameter
+                get() = this@ConstructorImpl.platformModel.parameterList.getParameter(index)!!
         }
     }
 

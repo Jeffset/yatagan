@@ -22,6 +22,7 @@ import com.yandex.yatagan.core.model.AssistedInjectFactoryModel.Parameter
 import com.yandex.yatagan.core.model.HasNodeModel
 import com.yandex.yatagan.core.model.NodeModel
 import com.yandex.yatagan.lang.BuiltinAnnotation
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.lang.TypeDeclaration
@@ -133,6 +134,9 @@ internal class AssistedInjectFactoryModelImpl private constructor(
         modelClassName = "assisted-factory",
         representation = impl,
     )
+
+    override val langModel: HasPlatformModel
+        get() = impl
 
     companion object Factory : ObjectCache<TypeDeclaration, AssistedInjectFactoryModelImpl>() {
         operator fun invoke(declaration: TypeDeclaration): AssistedInjectFactoryModelImpl {

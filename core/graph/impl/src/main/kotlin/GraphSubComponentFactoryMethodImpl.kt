@@ -19,6 +19,7 @@ package com.yandex.yatagan.core.graph.impl
 import com.yandex.yatagan.core.graph.BindingGraph
 import com.yandex.yatagan.core.graph.GraphSubComponentFactoryMethod
 import com.yandex.yatagan.core.model.SubComponentFactoryMethodModel
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
 import com.yandex.yatagan.validation.format.Strings
@@ -48,4 +49,7 @@ internal class GraphSubComponentFactoryMethodImpl(
     }
 
     override fun toString(childContext: MayBeInvalid?) = model.toString(null)
+
+    override val langModel: HasPlatformModel?
+        get() = model.langModel
 }

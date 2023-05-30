@@ -24,6 +24,7 @@ import com.yandex.yatagan.core.graph.impl.topologicalSort
 import com.yandex.yatagan.core.model.CollectionTargetKind
 import com.yandex.yatagan.core.model.ModuleHostedBindingModel
 import com.yandex.yatagan.core.model.NodeModel
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.format.TextColor
 import com.yandex.yatagan.validation.format.append
@@ -127,4 +128,7 @@ internal class MultiBindingImpl(
     override fun <R> accept(visitor: Binding.Visitor<R>): R {
         return visitor.visitMulti(this)
     }
+
+    override val langModel: HasPlatformModel?
+        get() = null
 }

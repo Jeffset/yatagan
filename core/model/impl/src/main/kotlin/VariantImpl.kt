@@ -19,6 +19,7 @@ package com.yandex.yatagan.core.model.impl
 import com.yandex.yatagan.core.model.Variant
 import com.yandex.yatagan.core.model.Variant.DimensionModel
 import com.yandex.yatagan.core.model.Variant.FlavorModel
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
@@ -90,4 +91,7 @@ internal class VariantImpl private constructor(
             }
         }
     )
+
+    override val langModel: HasPlatformModel?
+        get() = null  // TODO: See the todo above to have a clue on how to implement this.
 }

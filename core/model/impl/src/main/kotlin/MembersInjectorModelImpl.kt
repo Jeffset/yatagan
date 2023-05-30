@@ -22,6 +22,7 @@ import com.yandex.yatagan.core.model.NodeDependency
 import com.yandex.yatagan.core.model.NodeModel
 import com.yandex.yatagan.lang.BuiltinAnnotation
 import com.yandex.yatagan.lang.Field
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Member
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.lang.Type
@@ -102,6 +103,9 @@ internal class MembersInjectorModelImpl private constructor(
             }
         },
     )
+
+    override val langModel: HasPlatformModel
+        get() = injector
 
     companion object Factory : ObjectCache<Method, MembersInjectorModelImpl>() {
         operator fun invoke(injector: Method) = createCached(injector, ::MembersInjectorModelImpl)

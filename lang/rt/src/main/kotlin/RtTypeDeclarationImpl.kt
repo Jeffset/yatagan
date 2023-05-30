@@ -254,6 +254,9 @@ internal class RtTypeDeclarationImpl private constructor(
                     RtTypeImpl(parametersTypes[index].resolveGenerics(params))
                 } ?: RtTypeImpl(parametersTypes[index])
             }
+
+            override val platformModel: Any?
+                get() = null
         }
     }
 

@@ -28,6 +28,7 @@ import com.yandex.yatagan.lang.Annotated
 import com.yandex.yatagan.lang.Annotation
 import com.yandex.yatagan.lang.BuiltinAnnotation
 import com.yandex.yatagan.lang.Constructor
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.LangModelFactory
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.lang.getListType
@@ -114,6 +115,9 @@ internal class NodeModelImpl private constructor(
                 }
             },
         )
+
+        override val langModel: HasPlatformModel
+            get() = constructor
     }
 
     override fun toString(childContext: MayBeInvalid?) = buildRichString {
@@ -194,6 +198,9 @@ internal class NodeModelImpl private constructor(
         else -> NodeDependencyImpl(node = node, kind = kind)
     }
 
+    override val langModel: HasPlatformModel?
+        get() = null
+
     companion object Factory : ObjectCache<Any, NodeModelImpl>() {
         class VoidNode : NodeModel {
             override val type = LangModelFactory.createNoType("void")
@@ -218,6 +225,7 @@ internal class NodeModelImpl private constructor(
                 color = TextColor.Red
                 append("<invalid node: void>")
             }
+            override val langModel: HasPlatformModel? get() = null
         }
 
         operator fun invoke(

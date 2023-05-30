@@ -24,6 +24,7 @@ import com.yandex.yatagan.core.model.ConditionScope
 import com.yandex.yatagan.core.model.ConditionalHoldingModel
 import com.yandex.yatagan.lang.BuiltinAnnotation
 import com.yandex.yatagan.lang.Field
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Member
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.lang.Type
@@ -91,6 +92,9 @@ internal class FeatureModelImpl private constructor(
     override val type: Type
         get() = impl.asType()
 
+    override val langModel: HasPlatformModel
+        get() = impl
+
     companion object Factory : ObjectCache<TypeDeclaration, FeatureModelImpl>() {
         operator fun invoke(impl: TypeDeclaration) = createCached(impl, ::FeatureModelImpl)
     }
@@ -127,6 +131,9 @@ private class ConditionLiteralImpl private constructor(
         append(payload)
     }
 
+    override val langModel: HasPlatformModel?
+        get() = payload.langModel
+
     companion object Factory : BiObjectCache<Boolean, LiteralPayload, ConditionLiteralImpl>() {
         operator fun invoke(model: BuiltinAnnotation.ConditionFamily.One): ConditionModel {
             val condition = model.condition
@@ -155,6 +162,8 @@ private class ConditionLiteralImpl private constructor(
                         color = TextColor.Red
                         append("<invalid-condition>")
                     }
+
+                    override val langModel: HasPlatformModel? get() = null
                 }
             )
         }
@@ -265,6 +274,9 @@ private class LiteralPayloadImpl private constructor(
             }
         }
     }
+
+    override val langModel: HasPlatformModel?
+        get() = null  // TODO: point to the annotation?
 
     companion object Factory : BiObjectCache<Type, String, LiteralPayload>() {
         operator fun invoke(type: Type, pathSource: String): LiteralPayload {
