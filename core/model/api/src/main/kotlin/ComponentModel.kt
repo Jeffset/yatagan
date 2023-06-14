@@ -21,9 +21,14 @@ package com.yandex.yatagan.core.model
  */
 public interface ComponentModel : ConditionalHoldingModel, HasNodeModel {
     /**
+     * A set of modules that are included directly into the component.
+     */
+    public val modules: List<ModuleModel>
+
+    /**
      * A set of *all* modules that are included into the component (transitively).
      */
-    public val modules: Set<ModuleModel>
+    public val allModules: Set<ModuleModel>
 
     /**
      * All supported scopes for bindings, that component can cache.

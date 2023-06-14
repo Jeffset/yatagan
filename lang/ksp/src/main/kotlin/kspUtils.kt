@@ -143,7 +143,7 @@ internal fun parametersSequenceFor(
         val parameter = parameters[i]
         yield(
             KspParameterImpl(
-                impl = parameter,
+                platformModel = parameter,
                 jvmSignatureSupplier = { jvmMethodSignature.parameterTypesSignatures?.get(i) },
                 refinedTypeRef = parameter.type.run {
                     types?.get(i)?.let { replaceType(it) } ?: this

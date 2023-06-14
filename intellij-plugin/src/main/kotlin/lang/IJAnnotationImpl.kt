@@ -8,6 +8,7 @@ import com.intellij.psi.PsiAnnotationMethod
 import com.intellij.psi.PsiArrayInitializerMemberValue
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassObjectAccessExpression
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiEnumConstant
 import com.intellij.psi.PsiExpression
 import com.intellij.psi.PsiField
@@ -21,7 +22,14 @@ import com.yandex.yatagan.lang.Annotation
 import com.yandex.yatagan.lang.AnnotationDeclaration
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.lang.compiled.CtAnnotationDeclarationBase
+import org.jetbrains.kotlin.asJava.elements.KtLightElement
+import org.jetbrains.kotlin.idea.base.utils.fqname.fqName
+import org.jetbrains.kotlin.psi.KtAnnotationEntry
+import org.jetbrains.kotlin.psi.KtElementImplStub
+import org.jetbrains.kotlin.psi.KtValueArgument
+import org.jetbrains.kotlin.psi.stubs.elements.KtStubElementTypes
 import org.jetbrains.kotlin.resolve.annotations.argumentValue
+import org.jetbrains.kotlin.resolve.constants.ArrayValue
 
 internal class IJAnnotationImpl(
     override val platformModel: PsiAnnotation,
@@ -52,6 +60,77 @@ internal class IJAnnotationImpl(
                 }
             }
         })
+    }
+
+    internal class LazyImplForKt(
+        override val platformModel: KtAnnotationEntry,
+        private val context: PsiElement,
+    ) : IJAnnotationBase() {
+        private val valueCache = hashMapOf<String, Annotation.Value>()
+
+        override val annotationClass: AnnotationDeclaration by lazy {
+            AnnotationClassImpl.classOf(platformModel, context)
+        }
+
+        override fun getValue(attribute: AnnotationDeclaration.Attribute): Annotation.Value {
+            require(attribute is AttributeImpl) { "Invalid attribute type" }
+            return valueCache.getOrPut(attribute.name) {
+                getDeclaredValue(attribute) ?: attribute.defaultValue?.let { ValueImpl(it) } ?: UnresolvedValue()
+            }
+        }
+
+        private fun findValueArgument(attribute: AttributeImpl): List<KtValueArgument> {
+            val argList = platformModel.getStubOrPsiChild(KtStubElementTypes.VALUE_ARGUMENT_LIST) ?: return emptyList()
+            val varargs = arrayListOf<KtValueArgument>()
+            argList.arguments.forEachIndexed { index, argument ->
+                val name = argument.getArgumentName()?.asName?.asString()
+                if (name != null) {
+                    if (varargs.isNotEmpty()) {
+                        // Vararg end
+                        return varargs
+                    }
+                    if (name == attribute.name) {
+                        return listOf(argument)
+                    }
+                } else {
+                    val varargIndex = (annotationClass as? AnnotationClassImpl)?.varargAttributeIndex
+//                    println("Index for $annotationClass = $varargIndex")
+                    if (varargIndex != null && varargIndex <= index) {
+                        // This is a vararg argument contribution
+                        if (varargIndex == attribute.index) {
+                            varargs.add(argument)
+                        }
+                    } else {
+                        if (index == attribute.index) {
+                            return listOf(argument)
+                        }
+                    }
+                }
+            }
+            return varargs
+        }
+
+        private fun getDeclaredValue(attribute: AttributeImpl): Annotation.Value? {
+            val expectedType = (attribute.type as? IJTypeImpl)?.type ?: return null
+
+            val argumentValues = findValueArgument(attribute)
+//            println("Values count for ${attribute.name} = ${argumentValues.size}")
+
+            if (argumentValues.isEmpty()) {
+                return null
+            }
+
+            val values = argumentValues.map {
+                val expression = it.getArgumentExpression() ?: return null
+                Utils.evaluateExpression(expression, expectedType, context) ?: return null
+            }
+
+            return ValueImpl(
+                value = values.singleOrNull() ?: ArrayValue(values) { throw AssertionError() },
+                project = context.project,
+                resolveScope = context.resolveScope,
+            )
+        }
     }
 
     private class ImplForKt(
@@ -210,18 +289,24 @@ internal class IJAnnotationImpl(
 
     private class AnnotationClassImpl private constructor(
         val platformModel: PsiClass,
+        override val qualifiedName: String,
         private val project: Project,
     ) : CtAnnotationDeclarationBase(), Annotated by IJAnnotated(platformModel) {
 
-        override val qualifiedName: String by plainLazy {
-            platformModel.qualifiedName ?: ""
+        val varargAttributeIndex by lazy {
+            if (platformModel is KtLightElement<*, *>) {
+                val ktClass = platformModel.kotlinOrigin as? KtElementImplStub<*>
+                ktClass?.getStubOrPsiChild(KtStubElementTypes.PRIMARY_CONSTRUCTOR)
+                    ?.valueParameters?.indexOfFirst { it.isVarArg }
+                    .takeIf { it != -1 }
+            } else null
         }
 
         override val attributes by lazy {
             platformModel.methods.asSequence()
                 .filter { it.isAbstract() }
                 .filterIsInstance<PsiAnnotationMethod>()
-                .map { AttributeImpl(it, project) }
+                .mapIndexed { index, it -> AttributeImpl(it, project, index) }
                 .memoize()
         }
 
@@ -252,12 +337,14 @@ internal class IJAnnotationImpl(
                             val textuallyResolvedClass = facade.findClass(qualifiedName, annotation.resolveScope)
                             if (textuallyResolvedClass != null) {
                                 AnnotationClassImpl(
+                                    qualifiedName = qualifiedName,
                                     platformModel = textuallyResolvedClass,
                                     project = project,
                                 )
                             } else UnresolvedAnnotationClass(qualifiedName)
                         }
                         else -> AnnotationClassImpl(
+                            qualifiedName = qualifiedName,
                             platformModel = clazz,
                             project = project,
                         )
@@ -280,15 +367,51 @@ internal class IJAnnotationImpl(
                             if (textuallyResolvedClass != null) {
                                 AnnotationClassImpl(
                                     platformModel = textuallyResolvedClass,
+                                    qualifiedName = qualifiedNameString,
                                     project = project,
                                 )
                             } else UnresolvedAnnotationClass(qualifiedNameString)
                         }
                         else -> AnnotationClassImpl(
                             platformModel = clazz,
+                            qualifiedName = qualifiedNameString,
                             project = project,
                         )
                     }
+                }
+            }
+
+            fun classOf(
+                annotation: KtAnnotationEntry,
+                context: PsiElement,
+            ): AnnotationDeclaration {
+                Utils.lightResolveAnnotationFqName(annotation, context.resolveScope)?.let { lightResolveClass ->
+                    val qualifiedName = lightResolveClass.qualifiedName!!
+                    return createCached(qualifiedName) {
+                        AnnotationClassImpl(
+                            platformModel = lightResolveClass,
+                            qualifiedName = qualifiedName,
+                            project = context.project,
+                        )
+                    }.also {
+//                        println("Resolved annotation class $qualifiedName lightly")
+                    }
+                }
+
+                val qualifiedName = Utils.resolveKotlinType(annotation.typeReference!!, context)?.fqName
+                    ?: return UnresolvedAnnotationClass("+" + (annotation.text ?: "<unresolved>"))
+                val qualifiedNameString = qualifiedName.asString()
+                return createCached(qualifiedNameString) {
+                    val clazz = qualifiedName.findPsiClassKotlinAware(context.project, context.resolveScope)
+                        ?: JavaPsiFacade.getInstance(context.project).findClass(qualifiedNameString, context.resolveScope)
+                        ?: return@createCached UnresolvedAnnotationClass(qualifiedNameString)
+
+//                    println("Resolved kt annotation class ${clazz.qualifiedName}")
+                    AnnotationClassImpl(
+                        platformModel = clazz,
+                        qualifiedName = qualifiedNameString,
+                        project = context.project,
+                    )
                 }
             }
         }
@@ -297,15 +420,15 @@ internal class IJAnnotationImpl(
     private class AttributeImpl(
         val platformModel: PsiAnnotationMethod,
         private val project: Project,
+        val index: Int,
     ) : AnnotationDeclaration.Attribute {
-
         val defaultValue: PsiAnnotationMemberValue? by plainLazy { platformModel.defaultValue }
 
         override val name: String
             get() = platformModel.name
 
         override val type: Type by plainLazy {
-            IJTypeImpl(platformModel.returnType, project)
+            IJTypeImpl.ofNullable(platformModel.returnType, project)
         }
     }
 }

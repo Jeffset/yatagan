@@ -77,7 +77,7 @@ internal class VariantImpl private constructor(
             when {
                 childContext != null -> {
                     val (dimension, _) = parts.entries.find { (_, flavor) ->
-                        childContext == flavor
+                        childContext in flavor
                     }!!
                     append("{.., ")
                     appendChildContextReference(reference = buildRichString {

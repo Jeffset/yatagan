@@ -23,8 +23,16 @@ import com.yandex.yatagan.lang.compiled.CtConstructorBase
 import com.yandex.yatagan.lang.compiled.CtParameterBase
 import com.yandex.yatagan.lang.compiled.CtTypeDeclarationBase
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
+import org.jetbrains.kotlin.asJava.elements.KtLightElement
 import org.jetbrains.kotlin.asJava.toLightClass
+import org.jetbrains.kotlin.asJava.toLightGetter
+import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.jetbrains.kotlin.psi.KtConstructor
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
+import org.jetbrains.kotlin.psi.KtParameter
+import org.jetbrains.kotlin.psi.psiUtil.isPublic
+import org.jetbrains.uast.UParameter
+import org.jetbrains.uast.toUElementOfType
 
 internal class IJTypeDeclarationImpl private constructor(
     override val platformModel: PsiClass,
@@ -32,8 +40,8 @@ internal class IJTypeDeclarationImpl private constructor(
     val substitutor: PsiSubstitutor,
 ) : CtTypeDeclarationBase(), CtAnnotated by IJAnnotated(platformModel) {
 
-    override val kind: TypeDeclarationKind
-        get() = platformModel.let {
+    override val kind: TypeDeclarationKind by lazy {
+        platformModel.let {
             when {
                 it.isAnnotationType -> TypeDeclarationKind.Annotation
                 it.isInterface -> TypeDeclarationKind.Interface
@@ -44,22 +52,26 @@ internal class IJTypeDeclarationImpl private constructor(
                     } else {
                         TypeDeclarationKind.KotlinObject
                     }
+
                     else -> TypeDeclarationKind.Class
                 }
             }
         }
+    }
 
-    override val isAbstract: Boolean
-        get() = platformModel.let { it.isAbstract() && !it.isAnnotationType }
+    override val isAbstract: Boolean by lazy {
+        platformModel.let { it.isAbstract() && !it.isAnnotationType }
+    }
 
     override val qualifiedName: String by plainLazy {
         platformModel.qualifiedName ?: ""
     }
 
-    override val enclosingType: TypeDeclaration?
-        get() = platformModel.containingClass?.let { parent ->
+    override val enclosingType: TypeDeclaration? by lazy {
+        platformModel.containingClass?.let { parent ->
             Factory(parent)
         }
+    }
 
     override val interfaces: Sequence<Type>
         get() = TODO("Not yet implemented")
@@ -69,15 +81,28 @@ internal class IJTypeDeclarationImpl private constructor(
 
     override val constructors: Sequence<Constructor> by plainLazy {
         val platformModel = platformModel
-        val constructors = allMethodsAndTheirSubstitutors
-            .asSequence().filter { (it, _) -> it.isConstructor && it.containingClass == platformModel }
+
+        if (platformModel is KtLightElement<*, *>) {
+            val kotlinOrigin = platformModel.kotlinOrigin as? KtClassOrObject
+            if (kotlinOrigin != null) {
+                return@plainLazy sequence {
+                    val primary = kotlinOrigin.primaryConstructor
+                }
+            }
+        }
+
+        val constructors = platformModel.constructors
+            .asSequence()
+
+//        val constructors = allMethodsAndTheirSubstitutors
+//            .asSequence().filter { (it, _) -> it.isConstructor && it.containingClass == platformModel }
         if (constructors.none()) {
             // Default java constructor
             sequenceOf(DefaultConstructorImpl())
         } else {
-            constructors.filter { (it, _) ->
+            constructors.filter {
                 !it.isPrivate()
-            }.map { (method, substitutor) ->
+            }.map { method ->
                 ConstructorImpl(
                     platformModel = method,
                     substitutor = substitutor,
@@ -88,7 +113,13 @@ internal class IJTypeDeclarationImpl private constructor(
 
     override val methods: Sequence<Method> by plainLazy {
         val isCompanion = kind == TypeDeclarationKind.KotlinCompanion
-        allMethodsAndTheirSubstitutors.asSequence()
+        platformModel.allMethodsAndTheirSubstitutors
+            .groupBy { (method, _) -> method.name }
+            .flatMap { (_, methods) ->
+                if (methods.size > 1) {
+                    methods.distinctBy { (method, _) -> method.getSignature(PsiSubstitutor.EMPTY) }
+                } else methods
+            }.asSequence()
             .filter { (it, _) ->
                 !it.isConstructor && !it.isPrivate() && it.containingClass?.qualifiedName != "java.lang.Object" &&
                         // Such methods already have a truly static counterpart so skip them.
@@ -116,49 +147,46 @@ internal class IJTypeDeclarationImpl private constructor(
             }.memoize()
     }
 
-    override val nestedClasses: Sequence<TypeDeclaration>
-        get() = platformModel.innerClasses.asSequence().map {
+    override val nestedClasses: Sequence<TypeDeclaration> by lazy {
+        platformModel.innerClasses.asSequence().map {
             Factory(it, substitutor /* TODO: is this substitutor ok here? */)
-        }
+        }.memoize()
+    }
 
-    override val defaultCompanionObjectDeclaration: TypeDeclaration?
-        get() = when(val model = platformModel) {
+    override val defaultCompanionObjectDeclaration: TypeDeclaration? by lazy {
+        when(val model = platformModel) {
             is KtLightClass -> model.kotlinOrigin?.companionObjects?.find {
                 it.name == "Companion"
             }?.toLightClass()?.let { Factory(it) }
+
             else -> null
         }
+    }
 
     override fun asType(): Type {
         return cachedType
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as IJTypeDeclarationImpl
-
-        if (substitutor != other.substitutor) return false
-        if (qualifiedName != other.qualifiedName) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = substitutor.hashCode()
-        result = 31 * result + qualifiedName.hashCode()
-        return result
-    }
+//    override fun equals(other: Any?): Boolean {
+//        if (this === other) return true
+//        if (javaClass != other?.javaClass) return false
+//
+//        other as IJTypeDeclarationImpl
+//
+//        if (substitutor != other.substitutor) return false
+//        if (qualifiedName != other.qualifiedName) return false
+//
+//        return true
+//    }
+//
+//    override fun hashCode(): Int {
+//        var result = substitutor.hashCode()
+//        result = 31 * result + qualifiedName.hashCode()
+//        return result
+//    }
 
     override val isEffectivelyPublic: Boolean
         get() = platformModel.isPublic()
-
-    private val allMethodsAndTheirSubstitutors by plainLazy {
-        platformModel.allMethodsAndTheirSubstitutors.distinctBy { (method, _) ->
-            method.getSignature(PsiSubstitutor.EMPTY)
-        }
-    }
 
     private val cachedType by plainLazy {
         val factory = PsiElementFactory.getInstance(project)
@@ -181,6 +209,46 @@ internal class IJTypeDeclarationImpl private constructor(
             get() = this@IJTypeDeclarationImpl
     }
 
+    private inner class ConstructorKtImpl(
+        override val platformModel: KtConstructor<*>,
+    ) : CtConstructorBase() {
+        override val isEffectivelyPublic: Boolean
+            get() = platformModel.isPublic  // TODO: Fixme
+
+        override val annotations: Sequence<Annotation> by lazy {
+            platformModel.annotationEntries.asSequence().map {
+                IJAnnotationImpl.LazyImplForKt(it, platformModel)
+            }.memoize()
+        }
+
+        override val parameters: Sequence<Parameter> by lazy {
+            platformModel.valueParameters.asSequence()
+                .map { ParameterImpl(it) }
+                .memoize()
+        }
+
+        override val constructee: TypeDeclaration
+            get() = this@IJTypeDeclarationImpl
+
+        private inner class ParameterImpl(
+            override val platformModel: KtParameter,
+        ) : CtParameterBase() {
+            override val name: String
+                get() = platformModel.name ?: "<???>"
+
+            override val type: Type by lazy {
+                platformModel.toLightGetter()
+                val typeReference = platformModel.typeReference
+                val kotlinType = Utils.resolveKotlinType(typeReference!!, platformModel)
+                val type = platformModel.toUElementOfType<UParameter>()!!.type
+                IJTypeImpl(type, project)
+            }
+
+            override val annotations: Sequence<CtAnnotationBase>
+                get() = TODO("Not yet implemented")
+        }
+    }
+
     private inner class ConstructorImpl(
         override val platformModel: PsiMethod,
         private val substitutor: PsiSubstitutor,
@@ -188,9 +256,11 @@ internal class IJTypeDeclarationImpl private constructor(
         override val isEffectivelyPublic: Boolean
             get() = platformModel.isPublic()
 
-        override val parameters: Sequence<Parameter>
-            get() = (0 until platformModel.parameterList.parametersCount).asSequence()
+        override val parameters: Sequence<Parameter> by lazy {
+            (0 until platformModel.parameterList.parametersCount).asSequence()
                 .map { ParameterImpl(it) }
+                .memoize()
+        }
 
         override val constructee: TypeDeclaration
             get() = this@IJTypeDeclarationImpl
@@ -198,23 +268,28 @@ internal class IJTypeDeclarationImpl private constructor(
         private inner class ParameterImpl(
             private val index: Int,
         ) : CtParameterBase() {
+            private val annotated by lazy {
+                IJAnnotated(platformModel)
+            }
+
             override val annotations: Sequence<CtAnnotationBase>
-                get() = platformModel.annotations
-                    .asSequence().map { IJAnnotationImpl(it) }
+                get() = annotated.annotations
 
             override val name: String
                 get() = platformModel.name
 
-            override val type: Type
-                get() = IJTypeImpl(
+            override val type: Type by lazy {
+                IJTypeImpl(
                     type = platformModel.type
                         .substituteWith(substitutor)
                         .substituteWith(this@IJTypeDeclarationImpl.substitutor),
                     project = project,
                 )
+            }
 
-            override val platformModel: PsiParameter
-                get() = this@ConstructorImpl.platformModel.parameterList.getParameter(index)!!
+            override val platformModel: PsiParameter by lazy {
+                this@ConstructorImpl.platformModel.parameterList.getParameter(index)!!
+            }
         }
     }
 

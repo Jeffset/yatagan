@@ -19,7 +19,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPointerManager
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.concurrency.AppExecutorUtil
-import com.yandex.yatagan.base.ObjectCacheRegistry
 import com.yandex.yatagan.core.graph.impl.BindingGraph
 import com.yandex.yatagan.core.graph.impl.Options
 import com.yandex.yatagan.core.model.ModuleModel
@@ -84,12 +83,13 @@ class ComponentLineMarkerProvider : LineMarkerProviderDescriptor() {
                     runBlocking {
                         val job = scope.launch {
                             val messages = LangModelFactory.use(IjModelFactoryImpl(project)) {
-                                ObjectCacheRegistry.use {
+                                val element = pointer.element ?: return@launch
+                                withYataganCacheScope(project) {
                                     suspend fun Collection<ModuleModel>.warmupModules(): List<ModuleModel> = map {
                                         async {
                                             it.bindings.count()
                                             it.subcomponents.forEach { sub ->
-                                                sub.modules.warmupModules()
+                                                sub.allModules.warmupModules()
                                             }
                                             it.multiBindingDeclarations.count()
                                             it.includes.warmupModules()
@@ -97,14 +97,29 @@ class ComponentLineMarkerProvider : LineMarkerProviderDescriptor() {
                                     }.flatMap { it.await() }
 
                                     pi.fraction = 0.0
-                                    val element = pointer.element ?: return@launch
+
+//                                    project.createAnnotationResolver(element.resolveScope)
+//
+//                                    val facade: ResolutionFacade = KotlinCacheService.getInstance(project)
+//                                        .getResolutionFacadeByModuleInfo(
+//                                            moduleInfo = element.moduleInfo,
+//                                            platform = element.module?.platform ?: JvmPlatforms.unspecifiedJvmPlatform,
+//                                        )!!
+//                                    val resolver: ResolverForProject<out ModuleInfo> = facade.getResolverForProject()
+//                                    val moduleResolver: ResolverForModule = resolver.resolverForModuleDescriptor(facade.moduleDescriptor)
+//                                    val componentProvider: ComponentProvider = moduleResolver.componentProvider
+//                                    val resolveSession: ResolveSession = componentProvider.get()
+//                                    val trace: BindingTrace = componentProvider.get()
+//
+//                                    println("$trace: ${trace.javaClass}")
+
                                     val declaration =
                                         TypeDeclaration(element.parent.toUElement(UClass::class.java)!!)
                                     pi.fraction = 0.1
                                     val component = ComponentModel(declaration)
                                     pi.fraction = 0.15
 
-                                    component.modules.warmupModules()
+                                    component.allModules.warmupModules()
 
                                     pi.fraction = 0.3
                                     if (component.isRoot) {

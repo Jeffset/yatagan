@@ -45,21 +45,21 @@ public inline fun <R> LangModelFactory.Companion.use(factory: LangModelFactory, 
 }
 
 public abstract class AnnotationValueVisitorAdapter<R> : Annotation.Value.Visitor<R> {
-    public abstract fun visitDefault(): R
-    override fun visitBoolean(value: Boolean): R = visitDefault()
-    override fun visitByte(value: Byte): R = visitDefault()
-    override fun visitShort(value: Short): R = visitDefault()
-    override fun visitInt(value: Int): R = visitDefault()
-    override fun visitLong(value: Long): R = visitDefault()
-    override fun visitChar(value: Char): R = visitDefault()
-    override fun visitFloat(value: Float): R = visitDefault()
-    override fun visitDouble(value: Double): R = visitDefault()
-    override fun visitString(value: String): R = visitDefault()
-    override fun visitType(value: Type): R = visitDefault()
-    override fun visitAnnotation(value: Annotation): R = visitDefault()
-    override fun visitEnumConstant(enum: Type, constant: String): R = visitDefault()
-    override fun visitArray(value: List<Annotation.Value>): R = visitDefault()
-    override fun visitUnresolved(): R = visitDefault()
+    public abstract fun visitDefault(value: Any?): R
+    override fun visitBoolean(value: Boolean): R = visitDefault(value)
+    override fun visitByte(value: Byte): R = visitDefault(value)
+    override fun visitShort(value: Short): R = visitDefault(value)
+    override fun visitInt(value: Int): R = visitDefault(value)
+    override fun visitLong(value: Long): R = visitDefault(value)
+    override fun visitChar(value: Char): R = visitDefault(value)
+    override fun visitFloat(value: Float): R = visitDefault(value)
+    override fun visitDouble(value: Double): R = visitDefault(value)
+    override fun visitString(value: String): R = visitDefault(value)
+    override fun visitType(value: Type): R = visitDefault(value)
+    override fun visitAnnotation(value: Annotation): R = visitDefault(value)
+    override fun visitEnumConstant(enum: Type, constant: String): R = visitDefault(constant)
+    override fun visitArray(value: List<Annotation.Value>): R = visitDefault(value)
+    override fun visitUnresolved(): R = visitDefault(null)
 }
 
 public inline fun LangModelFactory.getListType(parameter: Type, isCovariant: Boolean = false): Type {

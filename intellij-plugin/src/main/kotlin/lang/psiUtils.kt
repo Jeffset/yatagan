@@ -5,6 +5,7 @@ import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiAnnotation
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiModifierListOwner
@@ -15,8 +16,17 @@ import com.intellij.psi.PsiTypeVisitor
 import com.intellij.psi.impl.PsiClassImplUtil
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.asJava.elements.KtLightElement
+import org.jetbrains.kotlin.asJava.elements.KtLightField
+import org.jetbrains.kotlin.asJava.elements.KtLightMethod
+import org.jetbrains.kotlin.asJava.elements.KtLightParameter
+import org.jetbrains.kotlin.asJava.elements.isGetter
+import org.jetbrains.kotlin.asJava.elements.isSetter
 import org.jetbrains.kotlin.builtins.jvm.JavaToKotlinClassMap
 import org.jetbrains.kotlin.name.FqNameUnsafe
+import org.jetbrains.kotlin.psi.KtAnnotated
+import org.jetbrains.kotlin.psi.KtParameter
+import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.toUElementOfExpectedTypes
@@ -113,3 +123,46 @@ internal inline operator fun <T> IJPair<T, *>.component1(): T = first
 internal inline operator fun <T> IJPair<*, T>.component2(): T = second
 
 internal inline fun <T> plainLazy(crossinline initializer: () -> T) = lazy(LazyThreadSafetyMode.NONE) { initializer() }
+
+enum class KotlinToJavaRelation {
+    Direct,
+    Field,
+//    File,
+    Property,
+    PropertyGetter,
+    PropertySetter,
+    Receiver,
+    ConstructorParameter,
+    SetterParameter,
+//    PropertyDelegateField,
+}
+
+fun PsiElement.detectKotlinOriginWithUseSiteTarget(): Pair<KtAnnotated, KotlinToJavaRelation>? {
+    if (this !is KtLightElement<*, *>) {
+        return null
+    }
+
+    val kotlinImpl: KtAnnotated = this.kotlinOrigin as? KtAnnotated ?: return null
+
+    val target = when(kotlinImpl) {
+        is KtProperty, is KtParameter -> when(this) {
+            is KtLightField -> KotlinToJavaRelation.Field
+            is KtLightParameter -> {
+                val method = this.method
+                when {
+                    method.isSetter -> KotlinToJavaRelation.SetterParameter
+                    method.isConstructor -> KotlinToJavaRelation.ConstructorParameter
+                    else -> KotlinToJavaRelation.Direct
+                }
+            }
+            is KtLightMethod -> when {
+                this.isSetter -> KotlinToJavaRelation.PropertySetter
+                this.isGetter -> KotlinToJavaRelation.PropertyGetter
+                else -> KotlinToJavaRelation.Property
+            }
+            else -> throw AssertionError("not reached")
+        }
+        else -> KotlinToJavaRelation.Direct
+    }
+    return kotlinImpl to target
+}

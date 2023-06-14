@@ -16,6 +16,7 @@
 
 package com.yandex.yatagan.validation.impl
 
+import com.yandex.yatagan.base.CharSequenceComparator
 import com.yandex.yatagan.base.traverseDepthFirstWithPath
 import com.yandex.yatagan.core.model.ClassBackedModel
 import com.yandex.yatagan.lang.Type

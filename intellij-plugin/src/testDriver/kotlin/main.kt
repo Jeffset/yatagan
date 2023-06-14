@@ -14,6 +14,7 @@ import com.yandex.yatagan.core.graph.impl.BindingGraph
 import com.yandex.yatagan.core.graph.impl.Options
 import com.yandex.yatagan.core.model.impl.ComponentModel
 import com.yandex.yatagan.intellij.lang.IjModelFactoryImpl
+import com.yandex.yatagan.intellij.lang.ProcessingUtils
 import com.yandex.yatagan.intellij.lang.TypeDeclaration
 import com.yandex.yatagan.intellij.testing.rmi.IntelliJTestService
 import com.yandex.yatagan.lang.BuiltinAnnotation
@@ -125,41 +126,43 @@ private class Driver(
         val recordingLogger = RecordingLogger()
         val logger = LoggerDecorator(recordingLogger)
         ObjectCacheRegistry.use {
-            LangModelFactory.use(IjModelFactoryImpl(project)) {
-                ReadAction.run<Nothing> {
-                    try {
-                        val allRootComponents = files.flatMap { file ->
-                            file?.toUElement(UFile::class.java)
-                                ?.allClasses()
-                                ?.map { TypeDeclaration(it) }
-                                ?: emptyList()
-                        }.filter {
-                            it.getAnnotation(BuiltinAnnotation.Component)?.isRoot == true
-                        }
+            ProcessingUtils(project).use {
+                LangModelFactory.use(IjModelFactoryImpl(project)) {
+                    ReadAction.run<Nothing> {
+                        try {
+                            val allRootComponents = files.flatMap { file ->
+                                file?.toUElement(UFile::class.java)
+                                    ?.allClasses()
+                                    ?.map { TypeDeclaration(it) }
+                                    ?: emptyList()
+                            }.filter {
+                                it.getAnnotation(BuiltinAnnotation.Component)?.isRoot == true
+                            }
 
-                        check(allRootComponents.isNotEmpty()) {
-                            "No root components detected! Check the test source/intellij test driver"
-                        }
+                            check(allRootComponents.isNotEmpty()) {
+                                "No root components detected! Check the test source/intellij test driver"
+                            }
 
-                        for (rootComponent in allRootComponents) {
-                            val graph = BindingGraph(
-                                root = ComponentModel(rootComponent),
-                                options = Options(),
-                            )
-                            val locatedMessages = validate(graph)
-                            for (message in locatedMessages) {
-                                val text = message.format(maxEncounterPaths = 1000).toString()
-                                when (message.message.kind) {
-                                    ValidationMessage.Kind.Error,
-                                    ValidationMessage.Kind.MandatoryWarning,
-                                    -> logger.error(text)
+                            for (rootComponent in allRootComponents) {
+                                val graph = BindingGraph(
+                                    root = ComponentModel(rootComponent),
+                                    options = Options(),
+                                )
+                                val locatedMessages = validate(graph)
+                                for (message in locatedMessages) {
+                                    val text = message.format(maxEncounterPaths = 1000).toString()
+                                    when (message.message.kind) {
+                                        ValidationMessage.Kind.Error,
+                                        ValidationMessage.Kind.MandatoryWarning,
+                                        -> logger.error(text)
 
-                                    ValidationMessage.Kind.Warning -> logger.warning(text)
+                                        ValidationMessage.Kind.Warning -> logger.warning(text)
+                                    }
                                 }
                             }
+                        } catch (e: Throwable) {
+                            e.printStackTrace()
                         }
-                    } catch (e: Throwable) {
-                        e.printStackTrace()
                     }
                 }
             }

@@ -59,6 +59,7 @@ internal class MembersInjectorModelImpl private constructor(
             injectee.declaration.methods.filter {
                 it.getAnnotation(BuiltinAnnotation.Inject) != null
             }.forEach { functionInjectee ->
+                println(functionInjectee.name)
                 put(functionInjectee, NodeDependency(
                     type = functionInjectee.parameters.single().type,
                     forQualifier = functionInjectee,

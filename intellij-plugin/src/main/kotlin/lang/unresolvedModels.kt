@@ -9,6 +9,11 @@ internal class RemovedPsiError : RuntimeException()
 internal class UnresolvedAnnotationClass(
     override val qualifiedName: String,
 ) : CtAnnotationDeclarationBase() {
+
+    init {
+        println("Unresolved: $qualifiedName")
+    }
+
     override val annotations get() = emptySequence<Nothing>()
     override val attributes get() = emptySequence<Nothing>()
     override fun getRetention() = AnnotationRetention.RUNTIME

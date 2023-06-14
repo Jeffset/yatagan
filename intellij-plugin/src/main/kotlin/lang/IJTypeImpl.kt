@@ -134,7 +134,7 @@ internal class IJTypeImpl private constructor(
         } ?: this
     }
 
-    private object BoxedTypeFactory : ObjectCache<PsiPrimitiveType, IJTypeImpl>() {
+    private object BoxedTypeFactory : ObjectCache<PsiPrimitiveType, Type>() {
         operator fun invoke(
             primitive: PsiPrimitiveType,
             project: Project,
@@ -149,20 +149,23 @@ internal class IJTypeImpl private constructor(
         }
     }
 
-    companion object Factory : ObjectCache<PsiType, IJTypeImpl>() {
+    companion object Factory : ObjectCache<Factory.TypeEquivalence, IJTypeImpl>() {
         operator fun invoke(
             type: PsiType,
             project: Project,
-        ): IJTypeImpl {
-            return createCached(type) {
+        ): Type {
+            val id = idOf(type) ?: return CtErrorType(
+                nameModel = InvalidNameModel.Unresolved(hint = type.canonicalText),
+            )
+            return createCached(id) {
                 IJTypeImpl(
-                    type = it,
+                    type = type,
                     project = project,
                 )
             }
         }
 
-        operator fun invoke(
+        fun ofNullable(
             type: PsiType?,
             project: Project,
         ): Type {
@@ -170,6 +173,96 @@ internal class IJTypeImpl private constructor(
                 nameModel = InvalidNameModel.Unresolved(hint = null),
             )
             return Factory(type, project)
+        }
+
+        private fun idOf(type: PsiType): TypeEquivalence? {
+            return type.accept(object : PsiTypeVisitor<TypeEquivalence?>() {
+                override fun visitClassType(classType: PsiClassType): TypeEquivalence? {
+                    val clazz = classType.resolve()
+                    if (clazz is PsiTypeParameter) {
+                        return TypeEquivalence.TypeVariable(
+                            context = clazz.owner,
+                            name = clazz.name ?: "",
+                        )
+                    }
+                    val baseType = TypeEquivalence.Class(
+                        qualifiedName = clazz?.qualifiedName ?: return null,
+                    )
+                    return if (classType.parameterCount > 0) {
+                        TypeEquivalence.Parameterized(
+                            raw = baseType,
+                            arguments = classType.parameters.map { it.accept(this) },
+                        )
+                    } else baseType
+                }
+
+                override fun visitPrimitiveType(primitiveType: PsiPrimitiveType): TypeEquivalence.Primitive {
+                    return when (primitiveType) {
+                        PsiTypes.byteType() -> TypeEquivalence.Primitive.Byte
+                        PsiTypes.charType() -> TypeEquivalence.Primitive.Char
+                        PsiTypes.doubleType() -> TypeEquivalence.Primitive.Double
+                        PsiTypes.floatType() -> TypeEquivalence.Primitive.Float
+                        PsiTypes.intType() -> TypeEquivalence.Primitive.Int
+                        PsiTypes.longType() -> TypeEquivalence.Primitive.Long
+                        PsiTypes.shortType() -> TypeEquivalence.Primitive.Short
+                        PsiTypes.booleanType() -> TypeEquivalence.Primitive.Boolean
+                        PsiTypes.voidType() -> TypeEquivalence.Primitive.Void
+                        else -> throw IllegalStateException("Unexpected primitive type: `$primitiveType`")
+                    }
+                }
+
+                override fun visitWildcardType(wildcardType: PsiWildcardType): TypeEquivalence {
+                    return TypeEquivalence.Wildcard(
+                        upper = ifOrElseNull(wildcardType.isExtends) { wildcardType.extendsBound.accept(this) },
+                        lower = ifOrElseNull(wildcardType.isSuper) { wildcardType.superBound.accept(this) },
+                    )
+                }
+
+                override fun visitArrayType(arrayType: PsiArrayType): TypeEquivalence? {
+                    return TypeEquivalence.ArrayType(
+                        elementType = arrayType.componentType.accept(this) ?: return null,
+                    )
+                }
+
+                override fun visitType(type: PsiType): Nothing? = null
+            })
+        }
+
+        internal sealed interface TypeEquivalence {
+            data class Class(
+                val qualifiedName: String,
+            ) : TypeEquivalence
+
+            data class Parameterized(
+                val raw: Class,
+                val arguments: List<TypeEquivalence?>,
+            ) : TypeEquivalence
+
+            data class Wildcard(
+                val upper: TypeEquivalence?,
+                val lower: TypeEquivalence?,
+            ) : TypeEquivalence
+
+            data class TypeVariable(
+                val context: Any?,
+                val name: String,
+            ) : TypeEquivalence
+
+            data class ArrayType(
+                val elementType: TypeEquivalence,
+            ) : TypeEquivalence
+
+            enum class Primitive : TypeEquivalence {
+                Byte,
+                Char,
+                Double,
+                Float,
+                Int,
+                Long,
+                Short,
+                Boolean,
+                Void,
+            }
         }
     }
 }

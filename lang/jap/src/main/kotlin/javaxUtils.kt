@@ -241,7 +241,7 @@ internal fun parametersSequenceFor(
     val parameters = element.parameters
     val types = element.asMemberOf(asMemberOf).asExecutableType().parameterTypes
     for (i in parameters.indices) {
-        yield(JavaxParameterImpl(impl = parameters[i], refinedType = types[i]))
+        yield(JavaxParameterImpl(platformModel = parameters[i], refinedType = types[i]))
     }
 }.memoize()
 

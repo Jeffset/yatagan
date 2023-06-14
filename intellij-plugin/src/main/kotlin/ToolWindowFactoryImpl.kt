@@ -6,6 +6,5 @@ import com.intellij.openapi.wm.ToolWindowFactory
 
 class ToolWindowFactoryImpl : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-
     }
 }

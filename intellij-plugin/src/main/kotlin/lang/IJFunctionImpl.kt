@@ -19,20 +19,22 @@ internal class IJFunctionImpl(
     override val isEffectivelyPublic: Boolean
         get() = platformModel.isPublic()
 
-    override val parameters: Sequence<Parameter>
-        get() = (0 until  platformModel.parameterList.parametersCount)
+    override val parameters: Sequence<Parameter> by lazy {
+        (0 until  platformModel.parameterList.parametersCount)
             .asSequence().map { ParameterImpl(it) }
+    }
 
     override val isAbstract: Boolean
         get() = platformModel.isAbstract()
 
-    override val returnType: Type
-        get() = IJTypeImpl(
+    override val returnType: Type by lazy {
+        IJTypeImpl(
             type = platformModel.returnType!!
                 .substituteWith(substitutor)
                 .substituteWith(owner.substitutor),
             project = platformModel.project,
         )
+    }
 
     override val isStatic: Boolean
         get() = platformModel.isStatic()
@@ -43,21 +45,26 @@ internal class IJFunctionImpl(
     private inner class ParameterImpl(
         private val index: Int,
     ): CtParameterBase() {
+        private val annotated by lazy {
+            IJAnnotated(platformModel)
+        }
+
         override val annotations: Sequence<CtAnnotationBase>
-            get() = platformModel.annotations
-                .asSequence().map { IJAnnotationImpl(it) }
+            get() = annotated.annotations
 
         override val name: String
             get() = platformModel.name
 
-        override val type: Type
-            get() = IJTypeImpl(
+        override val type: Type by lazy {
+            IJTypeImpl(
                 type = platformModel.type
                     .substituteWith(substitutor)
                     .substituteWith(owner.substitutor),
                 project = this@IJFunctionImpl.platformModel.project,
             )
-        override val platformModel: PsiParameter
-            get() = this@IJFunctionImpl.platformModel.parameterList.getParameter(index)!!
+        }
+        override val platformModel: PsiParameter by lazy {
+            this@IJFunctionImpl.platformModel.parameterList.getParameter(index)!!
+        }
     }
 }

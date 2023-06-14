@@ -114,7 +114,7 @@ internal abstract class ModuleHostedBindingBase : ModuleHostedBindingModel {
                 key.getValue(valueAttribute).accept(object : AnnotationValueVisitorAdapter<Unit>() {
                     // Unresolved is not reported here, as it's [:lang]'s problem and will be reported by the
                     //  compiler anyway.
-                    override fun visitDefault() = Unit
+                    override fun visitDefault(value: Any?) = Unit
                     override fun visitAnnotation(value: Annotation) {
                         validator.reportError(Errors.unsupportedAnnotationValueAsMapKey(annotationClass = clazz))
                     }

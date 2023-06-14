@@ -52,33 +52,33 @@ abstract class CtAnnotationBase : AnnotationBase() {
 
     companion object {
         private object AsBoolean : AnnotationValueVisitorAdapter<Boolean>() {
-            override fun visitDefault() = throw IllegalStateException("Expected boolean value")
+            override fun visitDefault(value: Any?) = throw IllegalStateException("Expected boolean value, got $value")
             override fun visitBoolean(value: Boolean) = value
         }
 
         private object AsType : AnnotationValueVisitorAdapter<Type>() {
-            override fun visitDefault() = throw IllegalStateException("Expected class value")
+            override fun visitDefault(value: Any?) = throw IllegalStateException("Expected class value, got $value")
             override fun visitType(value: Type) = value
         }
 
         private object AsTypes : AnnotationValueVisitorAdapter<List<Type>>() {
-            override fun visitDefault() = throw IllegalStateException("Expected class array value")
+            override fun visitDefault(value: Any?) = throw IllegalStateException("Expected class array value, got $value")
             override fun visitArray(value: List<Value>) = value.map { it.accept(AsType) }
             override fun visitType(value: Type) = listOf(value)
         }
 
         private object AsString : AnnotationValueVisitorAdapter<String>() {
-            override fun visitDefault() = throw IllegalStateException("Expected string value")
+            override fun visitDefault(value: Any?) = throw IllegalStateException("Expected string value, got $value")
             override fun visitString(value: String) = value
         }
 
         private object AsAnnotation : AnnotationValueVisitorAdapter<CtAnnotationBase>() {
-            override fun visitDefault() = throw IllegalStateException("Expected annotation value")
+            override fun visitDefault(value: Any?) = throw IllegalStateException("Expected annotation value")
             override fun visitAnnotation(value: Annotation) = value as CtAnnotationBase
         }
 
         private object AsAnnotations : AnnotationValueVisitorAdapter<List<CtAnnotationBase>>() {
-            override fun visitDefault() = throw IllegalStateException("Expected annotation array value")
+            override fun visitDefault(value: Any?) = throw IllegalStateException("Expected annotation array value, got $value")
             override fun visitArray(value: List<Value>) = value.map { it.accept(AsAnnotation) }
             override fun visitAnnotation(value: Annotation) = listOf(value as CtAnnotationBase)
         }

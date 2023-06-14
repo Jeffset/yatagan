@@ -14,21 +14,17 @@ val pluginsList = listOf(
     "org.jetbrains.kotlin",
 )
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
-    }
-}
-
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
+        languageVersion.set(JavaLanguageVersion.of(17))
     }
 }
 
 intellij {
-    version.set("2023.1.2")
-    type.set("IC")
+//    version.set("2023.1.2")
+//    type.set("IC")
+    localPath.set("/home/jeffset/.local/share/JetBrains/Toolbox/apps/IDEA-U/ch-0/232.6095.10")
+    type.set("IU")
 
     plugins.set(pluginsList)
 }
@@ -120,4 +116,8 @@ artifacts {
     add("testDriver", testDriverJar)
     add("testDriverRmiApi", testDriverRmiApiJar)
     add("testDriverCommandLine", generateTestDriverCommandLine)
+}
+
+tasks.runIde {
+    maxHeapSize = "4G"
 }

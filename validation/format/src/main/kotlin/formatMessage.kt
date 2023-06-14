@@ -17,6 +17,7 @@
 @file:[JvmMultifileClass JvmName("Format") ]
 package com.yandex.yatagan.validation.format
 
+import com.yandex.yatagan.base.PathComparator
 import com.yandex.yatagan.base.zipWithNextOrNull
 import com.yandex.yatagan.validation.LocatedMessage
 import com.yandex.yatagan.validation.MayBeInvalid
@@ -56,6 +57,7 @@ fun LocatedMessage.format(
             node.toString(childContext = itsChild)
         }
     }
+    pathStrings.sortWith(PathComparator)
     pathStrings.asSequence().take(maxEncounterPaths).forEachIndexed { pathIndex, path ->
         if (pathIndex != 0) {
             appendLine()
