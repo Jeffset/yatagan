@@ -29,6 +29,7 @@ import com.yandex.yatagan.core.model.ScopeModel
 import com.yandex.yatagan.core.model.SubComponentFactoryMethodModel
 import com.yandex.yatagan.core.model.Variant
 import com.yandex.yatagan.lang.BuiltinAnnotation
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.lang.TypeDeclaration
@@ -182,6 +183,9 @@ internal class ComponentModelImpl private constructor(
         modelClassName = if (isRoot) "root-component" else "component",
         representation = declaration,
     )
+
+    override val langModel: HasPlatformModel
+        get() = declaration
 
     private inner class MethodParser {
         val entryPoints = arrayListOf<ComponentEntryPoint>()

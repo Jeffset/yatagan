@@ -146,7 +146,7 @@ internal fun LexicalScope.parametersSequenceFor(
         yield(
             KspParameterImpl(
                 lexicalScope = this@parametersSequenceFor,
-                impl = parameter,
+                platformModel = parameter,
                 jvmSignatureSupplier = { jvmMethodSignature.parameterTypesSignatures?.get(i) },
                 refinedTypeRef = parameter.type.run {
                     types?.get(i)?.let { replaceType(it) } ?: this

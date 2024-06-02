@@ -17,7 +17,10 @@
 @file:[JvmMultifileClass JvmName("Format") ]
 package com.yandex.yatagan.validation.format
 
+import com.yandex.yatagan.base.PathComparator
+import com.yandex.yatagan.base.zipWithNextOrNull
 import com.yandex.yatagan.validation.LocatedMessage
+import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.RichString
 import com.yandex.yatagan.validation.ValidationMessage
 import kotlin.math.max
@@ -49,7 +52,13 @@ fun LocatedMessage.format(
         appendLine()
     }
     var reference: Int? = null
-    encounterPaths.asSequence().take(maxEncounterPaths).forEachIndexed { pathIndex, path ->
+    val pathStrings: MutableList<List<CharSequence>> = encounterPaths.mapTo(arrayListOf()) { path: List<MayBeInvalid> ->
+        path.zipWithNextOrNull { node: MayBeInvalid, itsChild: MayBeInvalid? ->
+            node.toString(childContext = itsChild)
+        }
+    }
+    pathStrings.sortWith(PathComparator)
+    pathStrings.asSequence().take(maxEncounterPaths).forEachIndexed { pathIndex, path ->
         if (pathIndex != 0) {
             appendLine()
         }
@@ -106,8 +115,8 @@ fun LocatedMessage.format(
             }
         }
     }
-    if (encounterPaths.size > maxEncounterPaths) {
-        val hiddenCount = encounterPaths.size - maxEncounterPaths
+    if (pathStrings.size > maxEncounterPaths) {
+        val hiddenCount = pathStrings.size - maxEncounterPaths
         appendRichString {
             color = TextColor.Gray
             isBold = true

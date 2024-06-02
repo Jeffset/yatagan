@@ -386,6 +386,9 @@ internal class BindingGraphImpl private constructor(
         validateAnnotationsRetention(this, validator)
     }
 
+    override val langModel: HasPlatformModel?
+        get() = component.langModel
+
     companion object Factory : FactoryKey<ComponentModel, BindingGraphImpl> {
         override fun LexicalScope.factory() = caching(::BindingGraphImpl)
     }

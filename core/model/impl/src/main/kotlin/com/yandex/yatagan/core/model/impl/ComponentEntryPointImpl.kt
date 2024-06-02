@@ -18,6 +18,7 @@ package com.yandex.yatagan.core.model.impl
 
 import com.yandex.yatagan.core.model.ComponentEntryPoint
 import com.yandex.yatagan.core.model.NodeDependency
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
@@ -42,6 +43,9 @@ internal class ComponentEntryPointImpl(
             }
         },
     )
+
+    override val langModel: HasPlatformModel
+        get() = getter
 
     companion object {
         fun canRepresent(method: Method): Boolean {

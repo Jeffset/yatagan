@@ -18,6 +18,7 @@ package com.yandex.yatagan.core.model.impl
 
 import com.yandex.yatagan.core.model.Variant
 import com.yandex.yatagan.lang.BuiltinAnnotation
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.lang.scope.FactoryKey
 import com.yandex.yatagan.lang.scope.LexicalScope
@@ -62,6 +63,9 @@ internal class FlavorImpl private constructor(
             }
         },
     )
+
+    override val langModel: HasPlatformModel?
+        get() = null  // TODO: Maybe use type.declaration?
 
     companion object Factory : FactoryKey<Type, FlavorImpl> {
         override fun LexicalScope.factory() = caching(::FlavorImpl)

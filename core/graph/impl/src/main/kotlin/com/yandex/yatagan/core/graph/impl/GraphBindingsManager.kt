@@ -70,6 +70,7 @@ import com.yandex.yatagan.core.model.ProvidesBindingModel
 import com.yandex.yatagan.core.model.SubComponentFactoryMethodModel
 import com.yandex.yatagan.core.model.accept
 import com.yandex.yatagan.core.model.allInputs
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.validation.MayBeInvalid
@@ -364,6 +365,9 @@ internal class GraphBindingsManager(
             }
         }
     }
+
+    override val langModel: HasPlatformModel?
+        get() = null
 
     private inner class ModuleHostedBindingsCreator : ModuleHostedBindingModel.Visitor<BaseBinding> {
         override fun visitOther(model: ModuleHostedBindingModel) = throw AssertionError()

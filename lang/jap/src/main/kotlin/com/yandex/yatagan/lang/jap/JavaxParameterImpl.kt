@@ -26,15 +26,15 @@ import kotlin.LazyThreadSafetyMode.PUBLICATION
 
 internal class JavaxParameterImpl(
     lexicalScope: LexicalScope,
-    private val impl: VariableElement,
+    private val platformModel: VariableElement,
     refinedType: TypeMirror,
-) : CtParameterBase(), CtAnnotated by JavaxAnnotatedImpl(lexicalScope, impl), LexicalScope by lexicalScope {
-    override val name: String get() = impl.simpleName.toString()
+) : CtParameterBase(), CtAnnotated by JavaxAnnotatedImpl(lexicalScope, platformModel), LexicalScope by lexicalScope {
+    override val name: String get() = platformModel.simpleName.toString()
     override val type: Type by lazy(PUBLICATION) { JavaxTypeImpl(refinedType) }
 
     override fun equals(other: Any?): Boolean {
-        return this === other || (other is JavaxParameterImpl && impl == other.impl)
+        return this === other || (other is JavaxParameterImpl && platformModel == other.platformModel)
     }
 
-    override fun hashCode() = impl.hashCode()
+    override fun hashCode() = platformModel.hashCode()
 }

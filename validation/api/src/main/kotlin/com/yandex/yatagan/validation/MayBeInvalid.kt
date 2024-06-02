@@ -16,6 +16,8 @@
 
 package com.yandex.yatagan.validation
 
+import com.yandex.yatagan.lang.HasPlatformModel
+
 /**
  * An interface for the models, which are eligible for validation (which may be invalid).
  * Models, implementing the interface, are nodes of a **validation graph**.
@@ -60,4 +62,6 @@ public interface MayBeInvalid {
      *  an instance *may be* used to provide more laconic string representation.
      */
     public fun toString(childContext: MayBeInvalid?): CharSequence
+
+    public val langModel: HasPlatformModel?
 }

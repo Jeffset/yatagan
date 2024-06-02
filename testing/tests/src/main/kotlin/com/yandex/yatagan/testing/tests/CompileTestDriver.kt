@@ -62,4 +62,5 @@ enum class Backend {
     Kapt,
     Ksp,
     Rt,
+    IntelliJ,
 }

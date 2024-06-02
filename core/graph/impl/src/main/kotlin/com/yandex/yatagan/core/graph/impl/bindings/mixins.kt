@@ -31,6 +31,7 @@ import com.yandex.yatagan.core.model.component1
 import com.yandex.yatagan.core.model.component2
 import com.yandex.yatagan.core.model.isOptional
 import com.yandex.yatagan.core.model.notImplies
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
 import com.yandex.yatagan.validation.format.Strings
@@ -215,4 +216,7 @@ internal abstract class ModuleHostedBindingMixin :
     final override fun compareTo(other: ModuleHostedBindingMixin): Int {
         return impl.method.compareTo(other.impl.method)
     }
+
+    override val langModel: HasPlatformModel?
+        get() = impl.method
 }

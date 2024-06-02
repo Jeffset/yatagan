@@ -42,7 +42,7 @@ internal class KspPropertySetterImpl(
     override val parameters: Sequence<Parameter> = sequence {
         yield(KspParameterImpl(
             lexicalScope = owner,
-            impl = setter.parameter,
+            platformModel = setter.parameter,
             refinedTypeRef = property.type.replaceType(property.asMemberOf(owner.type.impl)),
             jvmSignatureSupplier = { jvmSignature },
         ))

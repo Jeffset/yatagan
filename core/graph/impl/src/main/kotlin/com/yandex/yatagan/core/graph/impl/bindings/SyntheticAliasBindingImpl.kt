@@ -22,6 +22,7 @@ import com.yandex.yatagan.core.graph.bindings.BaseBinding
 import com.yandex.yatagan.core.graph.bindings.Binding
 import com.yandex.yatagan.core.model.ModuleModel
 import com.yandex.yatagan.core.model.NodeModel
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
 
@@ -53,4 +54,7 @@ internal class SyntheticAliasBindingImpl(
         // Pass-through
         return sourceBinding.compareTo(other)
     }
+
+    override val langModel: HasPlatformModel?
+        get() = null
 }

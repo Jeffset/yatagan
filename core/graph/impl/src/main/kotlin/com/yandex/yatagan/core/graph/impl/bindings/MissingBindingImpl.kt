@@ -26,6 +26,7 @@ import com.yandex.yatagan.core.model.HasNodeModel
 import com.yandex.yatagan.core.model.InjectConstructorModel
 import com.yandex.yatagan.core.model.NodeModel
 import com.yandex.yatagan.core.model.accept
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
 import com.yandex.yatagan.validation.format.Strings
@@ -115,4 +116,7 @@ internal data class MissingBindingImpl(
             )
         }
     }
+
+    override val langModel: HasPlatformModel?
+        get() = null
 }

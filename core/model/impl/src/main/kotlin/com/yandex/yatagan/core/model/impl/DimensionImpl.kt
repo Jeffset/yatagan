@@ -18,6 +18,7 @@ package com.yandex.yatagan.core.model.impl
 
 import com.yandex.yatagan.core.model.Variant
 import com.yandex.yatagan.lang.BuiltinAnnotation
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.lang.langFactory
 import com.yandex.yatagan.lang.scope.FactoryKey
@@ -48,6 +49,9 @@ internal class DimensionImpl private constructor(
     override val isInvalid: Boolean
         get() = false
 
+    override val langModel: HasPlatformModel?
+        get() = null  // TODO: Maybe use type.declaration?
+
     companion object Factory : FactoryKey<Type, DimensionImpl> {
         override fun LexicalScope.factory() = caching(::DimensionImpl)
     }
@@ -70,6 +74,9 @@ internal class MissingDimension(private val flavor: Variant.FlavorModel) : Varia
             append("<missing>")
         }
     )
+
+    override val langModel: HasPlatformModel?
+        get() = null
 
     override fun hashCode() = flavor.hashCode()
 

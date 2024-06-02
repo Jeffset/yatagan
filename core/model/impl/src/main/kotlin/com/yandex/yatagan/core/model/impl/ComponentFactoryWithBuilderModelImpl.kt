@@ -23,6 +23,7 @@ import com.yandex.yatagan.core.model.ComponentModel
 import com.yandex.yatagan.core.model.HasNodeModel
 import com.yandex.yatagan.core.model.NodeModel
 import com.yandex.yatagan.lang.BuiltinAnnotation
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.lang.TypeDeclaration
@@ -166,7 +167,13 @@ internal class ComponentFactoryWithBuilderModelImpl private constructor(
                 append(method.returnType)
             }
         )
+
+        override val langModel: HasPlatformModel
+            get() = method
     }
+
+    override val langModel: HasPlatformModel
+        get() = factoryDeclaration
 
     companion object Factory : FactoryKey<TypeDeclaration, ComponentFactoryWithBuilderModelImpl> {
         override fun LexicalScope.factory() = caching(::ComponentFactoryWithBuilderModelImpl)

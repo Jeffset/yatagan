@@ -22,7 +22,7 @@ import com.yandex.yatagan.lang.scope.LexicalScope
 /**
  * Models a [Callable] parameter.
  */
-public interface Parameter : Annotated, LexicalScope {
+public interface Parameter : Annotated, LexicalScope, HasPlatformModel {
     /**
      * Parameter name.
      *

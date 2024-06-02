@@ -244,7 +244,8 @@ internal fun LexicalScope.parametersSequenceFor(
     val parameters = element.parameters
     val types = asMemberOf(asMemberOf, element).asExecutableType().parameterTypes
     for (i in parameters.indices) {
-        yield(JavaxParameterImpl(lexicalScope = this@parametersSequenceFor, impl = parameters[i], refinedType = types[i]))
+        yield(JavaxParameterImpl(lexicalScope = this@parametersSequenceFor,
+            platformModel = parameters[i], refinedType = types[i]))
     }
 }.memoize()
 

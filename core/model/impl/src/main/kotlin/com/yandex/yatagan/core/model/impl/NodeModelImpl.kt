@@ -26,6 +26,7 @@ import com.yandex.yatagan.core.model.ScopeModel
 import com.yandex.yatagan.lang.Annotation
 import com.yandex.yatagan.lang.BuiltinAnnotation
 import com.yandex.yatagan.lang.Constructor
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.lang.getListType
 import com.yandex.yatagan.lang.getProviderType
@@ -110,6 +111,9 @@ internal class NodeModelImpl private constructor(
                 }
             },
         )
+
+        override val langModel: HasPlatformModel
+            get() = constructor
     }
 
     override fun toString(childContext: MayBeInvalid?) = buildRichString {
@@ -209,9 +213,30 @@ internal class NodeModelImpl private constructor(
         else -> NodeDependencyImpl(node = node, kind = kind)
     }
 
-    companion object Factory : FactoryKey<Pair<Type, Annotation?>, NodeModelImpl> {
-        private object Caching : FactoryKey<Pair<Type, Annotation?>, NodeModelImpl> {
-            override fun LexicalScope.factory() = caching(::NodeModelImpl)
+    companion object Factory : ObjectCache<Any, NodeModelImpl>() {
+        class VoidNode : NodeModel {
+            override val type = LangModelFactory.createNoType("void")
+            override val qualifier: Nothing? get() = null
+            override fun getSpecificModel(): Nothing? = null
+            override fun dropQualifier(): NodeModel = this
+            override fun multiBoundListNodes(): Array<NodeModel> = emptyArray()
+            override fun multiBoundSetNodes(): Array<NodeModel> = emptyArray()
+            override fun multiBoundMapNodes(key: Type, asProviders: Boolean): Array<NodeModel> = emptyArray()
+            override fun validate(validator: Validator) {
+                validator.reportError(Strings.Errors.voidBinding())
+            }
+            override val hintIsFrameworkType: Boolean get() = false
+            override fun compareTo(other: NodeModel): Int = hashCode() - other.hashCode()
+            override val node: NodeModel get() = this
+            override val kind: DependencyKind get() = DependencyKind.Direct
+            override fun copyDependency(node: NodeModel, kind: DependencyKind) = when(kind) {
+                DependencyKind.Direct -> node
+                else -> NodeDependencyImpl(node = node, kind = kind)
+            }
+            override fun toString(childContext: MayBeInvalid?) = buildRichString {
+                color = TextColor.Red
+                append("<invalid node: void>")
+            }
         }
 
         override fun LexicalScope.factory() = fun LexicalScope.(it: Pair<Type, Annotation?>): NodeModelImpl {

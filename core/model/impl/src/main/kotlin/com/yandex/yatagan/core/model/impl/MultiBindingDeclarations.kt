@@ -20,6 +20,7 @@ import com.yandex.yatagan.base.setOf
 import com.yandex.yatagan.core.model.CollectionTargetKind
 import com.yandex.yatagan.core.model.MultiBindingDeclarationModel
 import com.yandex.yatagan.core.model.NodeModel
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.validation.MayBeInvalid
@@ -41,6 +42,9 @@ internal abstract class MultiBindingDeclarationBase(
             }
         }
     }
+
+    override val langModel: HasPlatformModel
+        get() = method
 }
 
 internal class CollectionDeclarationImpl(
@@ -181,4 +185,7 @@ internal class InvalidDeclarationImpl(
             append("invalid `").append(invalidMethod).append('`')
         }
     }
+
+    override val langModel: HasPlatformModel
+        get() = invalidMethod
 }

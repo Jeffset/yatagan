@@ -24,6 +24,7 @@ import com.yandex.yatagan.core.model.ModuleModel
 import com.yandex.yatagan.core.model.NodeModel
 import com.yandex.yatagan.core.model.allInputs
 import com.yandex.yatagan.lang.BuiltinAnnotation
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Parameter
 import com.yandex.yatagan.lang.isKotlinObject
 import com.yandex.yatagan.lang.scope.invoke
@@ -65,6 +66,9 @@ internal abstract class ComponentFactoryModelBase : ComponentFactoryModel {
                         }
                     }
                 )
+
+                override val langModel: HasPlatformModel
+                    get() = param
             }
         }?.toList() ?: emptyList()
     }
@@ -152,6 +156,9 @@ internal abstract class ComponentFactoryModelBase : ComponentFactoryModel {
             modelClassName = "input",
             representation = model,
         )
+
+        override val langModel: HasPlatformModel?
+            get() = model.langModel
     }
 
     protected class InputPayloadInstanceImpl(
@@ -165,6 +172,9 @@ internal abstract class ComponentFactoryModelBase : ComponentFactoryModel {
             modelClassName = "input",
             representation = model,
         )
+
+        override val langModel: HasPlatformModel?
+            get() = model.langModel
     }
 
     protected inner class InputPayloadDependencyImpl(
@@ -184,5 +194,8 @@ internal abstract class ComponentFactoryModelBase : ComponentFactoryModel {
             modelClassName = "input",
             representation = model,
         )
+
+        override val langModel: HasPlatformModel?
+            get() = model.langModel
     }
 }

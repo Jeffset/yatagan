@@ -55,7 +55,7 @@ abstract class CompileTestDriverBase private constructor(
 
     protected abstract val checkGoldenOutput: Boolean
 
-    final override fun givenPrecompiledModule(sources: SourceSet) {
+    override fun givenPrecompiledModule(sources: SourceSet) {
         if (precompiledModuleOutputDirs != null) {
             throw UnsupportedOperationException("Multiple precompiled modules are not supported")
         }
@@ -237,7 +237,7 @@ abstract class CompileTestDriverBase private constructor(
     /**
      * Required to trim and sort error-messages, as they are not required to be issued in any particular order.
      */
-    private fun normalizeMessages(log: String): String {
+    protected fun normalizeMessages(log: String): String {
         return buildList {
             for (messageMatch in LoggerDecorator.MessageRegex.findAll(log)) {
                 val (kind, message) = messageMatch.destructured

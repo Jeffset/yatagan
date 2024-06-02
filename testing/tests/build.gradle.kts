@@ -27,6 +27,9 @@ val daggerApi by configurations.registering {
 }
 val daggerProcessor by configurations.registering
 
+val intellijTestDriverRuntime: Configuration by configurations.creating
+val intellijTestDriverCommandLine: Configuration by configurations.creating
+
 versionsToCheckLoaderCompatibility.forEach { version ->
     configurations.register("kaptForCompatCheck$version")
     configurations.register("apiForCompatCheck$version")
@@ -34,7 +37,7 @@ versionsToCheckLoaderCompatibility.forEach { version ->
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
+        languageVersion.set(JavaLanguageVersion.of(17))
     }
 }
 
@@ -65,6 +68,9 @@ dependencies {
     implementation(project(":lang:rt"))
     implementation(libs.poets.java)
 
+    // IntelliJ dependencies
+    implementation(project(path = ":intellij-plugin", configuration = "testDriverRmiApi"))
+
     // Heavy test dependencies
     testImplementation(project(":testing:procedural"))
 
@@ -77,6 +83,9 @@ dependencies {
     daggerApi(libs.testing.dagger.api)
     daggerProcessor(libs.testing.dagger.processor)
     daggerApi(kotlin("stdlib"))
+
+    intellijTestDriverRuntime(project(path = ":intellij-plugin", configuration = "testDriver"))
+    intellijTestDriverCommandLine(project(path = ":intellij-plugin", configuration = "testDriverCommandLine"))
 
     versionsToCheckLoaderCompatibility.forEach { version ->
         add("kaptForCompatCheck$version", "com.yandex.yatagan:processor-jap:$version")
@@ -113,6 +122,11 @@ val generateClasspathProperties by tasks.registering(ClasspathSourceGeneratorTas
                 register("Processor") { classpath = daggerProcessor }
             }
         }
+        register("IntelliJ") {
+            properties {
+                register("TestDriverClasspath") { classpath = intellijTestDriverRuntime }
+            }
+        }
     }
 }
 
@@ -140,6 +154,17 @@ tasks.test {
     // Increasing this will likely get a negative effect on tests performance as kotlin-compilation seems to be shared
     // between compilation invocations and I still haven't found a way to make it in-process.
     maxParallelForks = 1
+
+    val intellijTestDriverCommandLine: FileCollection = intellijTestDriverCommandLine
+    inputs.files(intellijTestDriverCommandLine)
+
+    val jdk8 = javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(8)) }
+
+    doFirst {
+        systemProperty("com.yandex.yatagan.intellij-test-driver-command-line",
+            intellijTestDriverCommandLine.singleFile.absolutePath)
+        systemProperty("com.yandex.yatagan.jdk8", jdk8.get().metadata.installationPath)
+    }
 }
 
 kotlin {

@@ -22,6 +22,7 @@ import com.yandex.yatagan.core.model.ConditionalHoldingModel.ConditionalWithFlav
 import com.yandex.yatagan.core.model.ConditionalHoldingModel.FeatureModel
 import com.yandex.yatagan.core.model.Variant.FlavorModel
 import com.yandex.yatagan.lang.BuiltinAnnotation
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.scope.invoke
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
@@ -94,9 +95,15 @@ internal open class ConditionalHoldingModelImpl(
         }
 
         override fun toString(childContext: MayBeInvalid?) = throw AssertionError("not reached")
+
+        override val langModel: HasPlatformModel?
+            get() = null  // TODO: Maybe point to `annotation`?
     }
 
     override fun validate(validator: Validator) {
         conditionals.forEach(validator::inline)
     }
+
+    override val langModel: HasPlatformModel?
+        get() = null  // TODO: Maybe point to `annotation`?
 }

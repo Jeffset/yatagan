@@ -22,6 +22,7 @@ import com.yandex.yatagan.core.model.ConditionalHoldingModel
 import com.yandex.yatagan.core.model.HasNodeModel
 import com.yandex.yatagan.core.model.NodeModel
 import com.yandex.yatagan.lang.BuiltinAnnotation
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.lang.TypeDeclaration
@@ -154,6 +155,9 @@ internal class AssistedInjectFactoryModelImpl private constructor(
         modelClassName = "assisted-factory",
         representation = impl,
     )
+
+    override val langModel: HasPlatformModel
+        get() = impl
 
     companion object Factory : FactoryKey<TypeDeclaration, AssistedInjectFactoryModelImpl> {
         override fun LexicalScope.factory() = caching(::AssistedInjectFactoryModelImpl)

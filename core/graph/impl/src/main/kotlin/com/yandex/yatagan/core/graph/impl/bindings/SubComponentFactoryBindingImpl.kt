@@ -24,6 +24,7 @@ import com.yandex.yatagan.core.graph.impl.VariantMatch
 import com.yandex.yatagan.core.model.ComponentFactoryWithBuilderModel
 import com.yandex.yatagan.core.model.ConditionScope
 import com.yandex.yatagan.core.model.NodeModel
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.format.modelRepresentation
 
@@ -62,4 +63,7 @@ internal class SubComponentFactoryBindingImpl(
     override fun <R> accept(visitor: Binding.Visitor<R>): R {
         return visitor.visitSubComponent(this)
     }
+
+    override val langModel: HasPlatformModel?
+        get() = factory.langModel
 }

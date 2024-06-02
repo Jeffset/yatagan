@@ -22,6 +22,7 @@ import com.yandex.yatagan.core.model.ComponentModel
 import com.yandex.yatagan.core.model.HasNodeModel
 import com.yandex.yatagan.core.model.NodeDependency
 import com.yandex.yatagan.core.model.accept
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
@@ -74,4 +75,7 @@ internal class GraphEntryPointImpl(
             }
         },
     )
+
+    override val langModel: HasPlatformModel?
+        get() = impl.langModel
 }

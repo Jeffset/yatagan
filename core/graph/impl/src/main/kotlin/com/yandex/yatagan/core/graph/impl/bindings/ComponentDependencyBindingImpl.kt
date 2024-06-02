@@ -20,6 +20,7 @@ import com.yandex.yatagan.core.graph.BindingGraph
 import com.yandex.yatagan.core.graph.bindings.Binding
 import com.yandex.yatagan.core.graph.bindings.ComponentDependencyBinding
 import com.yandex.yatagan.core.model.ComponentDependencyModel
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.format.modelRepresentation
 
@@ -37,4 +38,7 @@ internal class ComponentDependencyBindingImpl(
         modelClassName = "component-dependency-instance",
         representation = dependency,
     )
+
+    override val langModel: HasPlatformModel?
+        get() = null  // TODO: Maybe point to @Component(dependencies=[.., <here>, ..], ..) somehow?
 }

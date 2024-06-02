@@ -16,8 +16,8 @@
 
 package com.yandex.yatagan.validation.impl
 
+import com.yandex.yatagan.base.CharSequenceComparator
 import com.yandex.yatagan.base.traverseDepthFirstWithPath
-import com.yandex.yatagan.base.zipWithNextOrNull
 import com.yandex.yatagan.core.model.ClassBackedModel
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.validation.LocatedMessage
@@ -83,18 +83,11 @@ fun validate(
     )
 
     return result.map { (message, paths) ->
-        val pathStrings: MutableList<List<CharSequence>> = paths.mapTo(arrayListOf()) { path: List<MayBeInvalid> ->
-            path.zipWithNextOrNull { node: MayBeInvalid, itsChild: MayBeInvalid? ->
-                node.toString(childContext = itsChild)
-            }
-        }
-        pathStrings.sortWith(PathComparator)
-
         LocatedMessage(
             message = object : ValidationMessage by message {
                 override val notes: Collection<CharSequence> = message.notes.sortedWith(CharSequenceComparator)
             },
-            encounterPaths = pathStrings,
+            encounterPaths = paths.toList(),
         )
     }
 }

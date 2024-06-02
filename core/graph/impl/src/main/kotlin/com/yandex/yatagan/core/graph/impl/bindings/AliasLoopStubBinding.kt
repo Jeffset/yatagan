@@ -21,6 +21,7 @@ import com.yandex.yatagan.core.graph.bindings.AliasBinding
 import com.yandex.yatagan.core.graph.bindings.Binding
 import com.yandex.yatagan.core.graph.bindings.EmptyBinding
 import com.yandex.yatagan.core.model.NodeModel
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
 import com.yandex.yatagan.validation.format.Strings
@@ -48,4 +49,7 @@ internal class AliasLoopStubBinding(
         append("<alias-loop> ")
         append(aliasLoop.first())
     }
+
+    override val langModel: HasPlatformModel?
+        get() = aliasLoop.last().langModel
 }

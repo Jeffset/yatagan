@@ -24,6 +24,7 @@ import com.yandex.yatagan.core.graph.impl.VariantMatch
 import com.yandex.yatagan.core.model.ConditionScope
 import com.yandex.yatagan.core.model.InjectConstructorModel
 import com.yandex.yatagan.core.model.NodeDependency
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
 import com.yandex.yatagan.validation.format.append
@@ -66,4 +67,7 @@ internal class InjectConstructorProvisionBindingImpl(
         representation = { append(impl.constructor.constructee) },
         childContext = childContext,
     )
+
+    override val langModel: HasPlatformModel?
+        get() = impl.langModel
 }

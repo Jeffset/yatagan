@@ -30,6 +30,7 @@ import com.yandex.yatagan.core.model.ScopeModel
 import com.yandex.yatagan.lang.Annotated
 import com.yandex.yatagan.lang.Annotation
 import com.yandex.yatagan.lang.BuiltinAnnotation
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.lang.common.isDaggerCompat
 import com.yandex.yatagan.validation.MayBeInvalid
@@ -106,6 +107,7 @@ internal data class NodeDependencyImpl(
         append(node)
     }
     override fun copyDependency(node: NodeModel, kind: DependencyKind) = copy(node = node, kind = kind)
+    override val langModel: HasPlatformModel? get() = null
 }
 
 internal fun Annotation.isScope() = annotationClass.getAnnotation(BuiltinAnnotation.Scope) != null

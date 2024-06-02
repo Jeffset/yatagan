@@ -25,13 +25,13 @@ import com.yandex.yatagan.lang.scope.LexicalScope
 
 internal class KspParameterImpl(
     lexicalScope: LexicalScope,
-    private val impl: KSValueParameter,
+    private val platformModel: KSValueParameter,
     private val refinedTypeRef: KSTypeReference,
     private val jvmSignatureSupplier: () -> String?,
-) : CtParameterBase(), CtAnnotated by KspAnnotatedImpl(lexicalScope, impl), LexicalScope by lexicalScope {
+) : CtParameterBase(), CtAnnotated by KspAnnotatedImpl(lexicalScope, platformModel), LexicalScope by lexicalScope {
 
     override val name: String
-        get() = impl.name?.asString() ?: "unnamed"
+        get() = platformModel.name?.asString() ?: "unnamed"
 
     override val type: Type by lazy {
         KspTypeImpl(
@@ -42,8 +42,8 @@ internal class KspParameterImpl(
     }
 
     override fun equals(other: Any?): Boolean {
-        return this === other || (other is KspParameterImpl && impl == other.impl)
+        return this === other || (other is KspParameterImpl && platformModel == other.platformModel)
     }
 
-    override fun hashCode() = impl.hashCode()
+    override fun hashCode() = platformModel.hashCode()
 }

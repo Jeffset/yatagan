@@ -20,6 +20,7 @@ import com.yandex.yatagan.core.model.ComponentDependencyModel
 import com.yandex.yatagan.core.model.DependencyKind
 import com.yandex.yatagan.core.model.NodeDependency
 import com.yandex.yatagan.core.model.NodeModel
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.lang.scope.FactoryKey
@@ -77,6 +78,9 @@ internal class ComponentDependencyModelImpl private constructor(
         modelClassName = "component-dependency",
         representation = type,
     )
+
+    override val langModel: HasPlatformModel?
+        get() = null  // TODO: point to the annotation
 
     companion object Factory : FactoryKey<Type, ComponentDependencyModelImpl> {
         override fun LexicalScope.factory() = caching(::ComponentDependencyModelImpl)
