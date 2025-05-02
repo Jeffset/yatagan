@@ -19,6 +19,7 @@ package com.yandex.yatagan.core.model.impl
 import com.yandex.yatagan.core.model.ConditionScope
 import com.yandex.yatagan.core.model.ConditionalHoldingModel
 import com.yandex.yatagan.lang.BuiltinAnnotation
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.lang.TypeDeclaration
 import com.yandex.yatagan.lang.scope.FactoryKey
@@ -55,6 +56,9 @@ internal class FeatureModelImpl private constructor(
         }
         conditionExpressionHolder?.validate(validator)
     }
+
+    override val langModel: HasPlatformModel
+        get() = impl
 
     override fun toString(childContext: MayBeInvalid?) = modelRepresentation(
         modelClassName = "feature",

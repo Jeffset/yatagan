@@ -35,11 +35,11 @@ internal class InjectConstructorProvisionBindingImpl(
     override val owner: BindingGraph,
 ) : ProvisionBinding, ConditionalBindingMixin, ComparableByTargetBindingMixin {
     override val target get() = impl.asNode()
-    override val originModule: Nothing? get() = null
     override val scopes get() = impl.scopes
     override val provision get() = impl.constructor
     override val inputs: List<NodeDependency> get() = impl.inputs
     override val requiresModuleInstance: Boolean = false
+    override val isInjectConstructor: Boolean get() = true
     override val variantMatch: VariantMatch by lazy { VariantMatch(impl, owner.variant) }
 
     override val checkDependenciesConditionScope: Boolean

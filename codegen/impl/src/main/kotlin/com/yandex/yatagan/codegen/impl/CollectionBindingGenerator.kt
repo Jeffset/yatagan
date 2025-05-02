@@ -61,15 +61,15 @@ internal class CollectionBindingGenerator @Inject constructor (
                 +")"
             }
         }
-        binding.contributions.forEach { (node: NodeModel, kind: ContributionType) ->
-            val nodeBinding = thisGraph.resolveBinding(node)
+        binding.contributions.forEach { contribution ->
+            val nodeBinding = thisGraph.resolveBinding(contribution.contributionDependency)
             generateUnderCondition(
                 binding = nodeBinding,
                 inside = thisGraph,
                 isInsideInnerClass = false,
             ) {
                 +buildExpression {
-                    when (kind) {
+                    when (contribution.contributionType) {
                         ContributionType.Element -> +"c.add("
                         ContributionType.Collection -> +"c.addAll("
                     }

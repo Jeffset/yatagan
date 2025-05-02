@@ -25,7 +25,7 @@ import com.yandex.yatagan.lang.scope.LexicalScope
 
 internal class KspParameterImpl(
     lexicalScope: LexicalScope,
-    private val platformModel: KSValueParameter,
+    override val platformModel: KSValueParameter,
     private val refinedTypeRef: KSTypeReference,
     private val jvmSignatureSupplier: () -> String?,
 ) : CtParameterBase(), CtAnnotated by KspAnnotatedImpl(lexicalScope, platformModel), LexicalScope by lexicalScope {

@@ -9,17 +9,11 @@ import com.intellij.pom.java.LanguageLevel
 import com.intellij.testFramework.IdeaTestUtil
 import com.intellij.testFramework.PsiTestUtil
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase
-import com.yandex.yatagan.base.ObjectCacheRegistry
 import com.yandex.yatagan.core.graph.impl.BindingGraph
-import com.yandex.yatagan.core.graph.impl.Options
 import com.yandex.yatagan.core.model.impl.ComponentModel
-import com.yandex.yatagan.intellij.lang.IjModelFactoryImpl
-import com.yandex.yatagan.intellij.lang.ProcessingUtils
-import com.yandex.yatagan.intellij.lang.TypeDeclaration
+import com.yandex.yatagan.intellij.lang.IJLexicalScope
 import com.yandex.yatagan.intellij.testing.rmi.IntelliJTestService
 import com.yandex.yatagan.lang.BuiltinAnnotation
-import com.yandex.yatagan.lang.LangModelFactory
-import com.yandex.yatagan.lang.use
 import com.yandex.yatagan.processor.common.Logger
 import com.yandex.yatagan.processor.common.LoggerDecorator
 import com.yandex.yatagan.validation.ValidationMessage
@@ -38,14 +32,15 @@ import java.rmi.server.UnicastRemoteObject
 import java.util.concurrent.Executors
 import kotlin.system.exitProcess
 
-private const val TIMEOUT = 5_000L
+private const val TIMEOUT = 30_000L
 
 fun main(args: Array<String>) {
     val (apiClasspath, jdkPath) = args
+    println("SERVICE: Launched")
 
-    val executorService = Executors.newSingleThreadExecutor()
-    val dispatcher = executorService.asCoroutineDispatcher()
-    runBlocking(dispatcher) {
+//    val executorService = Executors.newSingleThreadExecutor()
+//    val dispatcher = executorService.asCoroutineDispatcher()
+    runBlocking {
         val driver = async {
             // Heavy classloading and initialization, has to be async
             Driver(
@@ -54,18 +49,18 @@ fun main(args: Array<String>) {
             )
         }
 
-        fun keepAlivePulse() {
-            launch {
-                delay(TIMEOUT)
-            }
+        fun startTimeoutCountdown() {
+            launch { delay(TIMEOUT) }
         }
 
         val service = object : IntelliJTestService {
             override fun runTest(projectDirectory: String): String {
-                return runBlocking(dispatcher) {
-                    driver.await().runTest(projectDirectory).also {
-                        keepAlivePulse()
-                    }
+                println("SERVICE: Running test in $projectDirectory")
+                return runBlocking {
+                    driver.await().runTest(projectDirectory)
+                }.also {
+                    startTimeoutCountdown()
+                    println("SERVICE: Done running test in $projectDirectory")
                 }
             }
         }
@@ -73,8 +68,9 @@ fun main(args: Array<String>) {
         LocateRegistry.createRegistry(IntelliJTestService.RMI_PORT)
             .bind(IntelliJTestService::class.qualifiedName, UnicastRemoteObject.exportObject(service, 0))
 
-        keepAlivePulse()
+        startTimeoutCountdown()
     }
+    println("SERVICE: Exit")
     exitProcess(0)
 }
 
@@ -125,46 +121,42 @@ private class Driver(
 
         val recordingLogger = RecordingLogger()
         val logger = LoggerDecorator(recordingLogger)
-        ObjectCacheRegistry.use {
-            ProcessingUtils(project).use {
-                LangModelFactory.use(IjModelFactoryImpl(project)) {
-                    ReadAction.run<Nothing> {
-                        try {
-                            val allRootComponents = files.flatMap { file ->
-                                file?.toUElement(UFile::class.java)
-                                    ?.allClasses()
-                                    ?.map { TypeDeclaration(it) }
-                                    ?: emptyList()
-                            }.filter {
-                                it.getAnnotation(BuiltinAnnotation.Component)?.isRoot == true
-                            }
+        val lexicalScope = IJLexicalScope(myFixture.project)
+        ReadAction.run<Nothing> {
+            try {
+                lexicalScope.analyze(files.first()) {
+                    val allRootComponents = files.flatMap { file ->
+                        file?.toUElement(UFile::class.java)
+                            ?.allClasses()
+                            ?.map { getTypeDeclaration(it.javaPsi) }
+                            ?: emptyList()
+                    }.filter {
+                        it.getAnnotation(BuiltinAnnotation.Component)?.isRoot == true
+                    }
 
-                            check(allRootComponents.isNotEmpty()) {
-                                "No root components detected! Check the test source/intellij test driver"
-                            }
+                    check(allRootComponents.isNotEmpty()) {
+                        "No root components detected! Check the test source/intellij test driver"
+                    }
 
-                            for (rootComponent in allRootComponents) {
-                                val graph = BindingGraph(
-                                    root = ComponentModel(rootComponent),
-                                    options = Options(),
-                                )
-                                val locatedMessages = validate(graph)
-                                for (message in locatedMessages) {
-                                    val text = message.format(maxEncounterPaths = 1000).toString()
-                                    when (message.message.kind) {
-                                        ValidationMessage.Kind.Error,
-                                        ValidationMessage.Kind.MandatoryWarning,
-                                        -> logger.error(text)
+                    for (rootComponent in allRootComponents) {
+                        val graph = BindingGraph(
+                            root = ComponentModel(rootComponent),
+                        )
+                        val locatedMessages = validate(graph)
+                        for (message in locatedMessages) {
+                            val text = message.format(maxEncounterPaths = 1000).toString()
+                            when (message.message.kind) {
+                                ValidationMessage.Kind.Error,
+                                ValidationMessage.Kind.MandatoryWarning,
+                                -> logger.error(text)
 
-                                        ValidationMessage.Kind.Warning -> logger.warning(text)
-                                    }
-                                }
+                                ValidationMessage.Kind.Warning -> logger.warning(text)
                             }
-                        } catch (e: Throwable) {
-                            e.printStackTrace()
                         }
                     }
                 }
+            } catch (e: Throwable) {
+                logger.error(e.stackTraceToString())
             }
         }
         return recordingLogger.getLog()

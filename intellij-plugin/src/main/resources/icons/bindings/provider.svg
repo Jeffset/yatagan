@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <g fill-rule="evenodd">
+  <rect transform="rotate(45)" x="5.71" y="-5.6" width="11.2" height="11.2" rx="2.43" fill="#7c1" fill-opacity=".77" stroke-width=".8"/>
+  <text x="5.257329" y="11.208309" fill="#010101" font-size="8.99px" stroke-linecap="round" stroke-width=".749" xml:space="preserve"><tspan x="5.257329" y="11.208309" stroke-width=".749">P</tspan></text>
+ </g>
+ <path d="m3.64 8.93-3.5 3.5 3.5 3.5 3.5-3.5zm-1.24 3.5 1.24-1.24 1.24 1.24-1.24 1.24z" display="none" fill="#cfd5d9" fill-rule="evenodd"/>
+</svg>

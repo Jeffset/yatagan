@@ -35,6 +35,9 @@ internal class AliasLoopStubBinding(
     override val target: NodeModel,
     private val aliasLoop: Collection<AliasBinding>,
 ) : EmptyBinding, BindingDefaultsMixin, ComparableByTargetBindingMixin {
+    override val isUnresolved: Boolean
+        get() = true
+
     override fun <R> accept(visitor: Binding.Visitor<R>): R {
         return visitor.visitEmpty(this)
     }

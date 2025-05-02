@@ -36,6 +36,9 @@ internal class SelfDependentInvalidBinding(
         return visitor.visitEmpty(this)
     }
 
+    override val isUnresolved: Boolean
+        get() = true
+
     override fun validate(validator: Validator) {
         super.validate(validator)
         // Always invalid

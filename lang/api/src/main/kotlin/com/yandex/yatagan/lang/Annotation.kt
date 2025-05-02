@@ -58,7 +58,7 @@ public interface Annotation : HasPlatformModel, LexicalScope {
      */
     public interface Value : HasPlatformModel {
         @StableForImplementation
-        public interface Visitor<R> {
+        public interface Visitor<out R> {
             public fun visitDefault(value: Any?): R
             public fun visitBoolean(value: Boolean): R = visitDefault(value)
             public fun visitByte(value: Byte): R = visitDefault(value)

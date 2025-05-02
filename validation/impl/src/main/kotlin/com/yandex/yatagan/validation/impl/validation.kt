@@ -68,19 +68,33 @@ fun validate(
     val cache = hashMapOf<MayBeInvalid, ValidatorImpl>()
     val result: MutableMap<ValidationMessage, MutableSet<List<MayBeInvalid>>> = mutableMapOf()
 
-    traverseDepthFirstWithPath(
-        roots = listOf(root),
-        childrenOf = { cache[it]?.children ?: emptyList() },
-        visit = { path, node ->
-            val validator = cache.getOrPut(node) {
-                ValidatorImpl().also { validator -> validator.inline(node) }
+    run {
+        traverseDepthFirstWithPath(
+            roots = listOf(root),
+            childrenOf = { cache[it]?.children ?: emptyList() },
+            visit = { path, node ->
+                if (result.size > MAX_ENCOUNTER_PATHS_PER_MESSAGE) {
+                    result[object : ValidationMessage {
+                        override val kind get() = ValidationMessage.Kind.Warning
+                        override val contents: CharSequence
+                            get() = ""
+                        override val notes get() = emptyList<CharSequence>()
+                    }] = mutableSetOf()
+                    return@run
+                }
+                val validator = cache.getOrPut(node) {
+                    ValidatorImpl().also { validator -> validator.inline(node) }
+                }
+                for (message in validator.messages) {
+                    // Extract current path from stack::substack
+                    val paths = result.getOrPut(message, ::mutableSetOf)
+                    if (paths.size < MAX_ENCOUNTER_PATHS_PER_MESSAGE) {
+                        paths += path.toList()
+                    }
+                }
             }
-            for (message in validator.messages) {
-                // Extract current path from stack::substack
-                result.getOrPut(message, ::mutableSetOf) += path.toList()
-            }
-        }
-    )
+        )
+    }
 
     return result.map { (message, paths) ->
         LocatedMessage(
@@ -95,3 +109,6 @@ fun validate(
 private fun Type.isInvalid(): Boolean {
     return isUnresolved || typeArguments.any(Type::isInvalid)
 }
+
+private const val MAX_ENCOUNTER_PATHS_PER_MESSAGE = 10
+private const val MAX_MESSAGES = 100

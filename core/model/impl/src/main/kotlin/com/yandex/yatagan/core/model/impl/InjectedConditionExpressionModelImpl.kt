@@ -22,6 +22,7 @@ import com.yandex.yatagan.core.model.InjectedConditionExpressionModel
 import com.yandex.yatagan.core.model.NodeModel
 import com.yandex.yatagan.lang.Annotation
 import com.yandex.yatagan.lang.BuiltinAnnotation
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
@@ -56,6 +57,9 @@ internal class InjectedConditionExpressionModelImpl(
         }
         conditionExpressionHolder.validate(validator)
     }
+
+    override val langModel: HasPlatformModel?
+        get() = node.langModel
 
     override fun toString(childContext: MayBeInvalid?) = modelRepresentation(
         modelClassName = "injectable condition expression",

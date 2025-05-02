@@ -55,7 +55,6 @@ import com.yandex.yatagan.lang.Constructor
 import com.yandex.yatagan.lang.Field
 import com.yandex.yatagan.lang.Member
 import com.yandex.yatagan.lang.Method
-import com.yandex.yatagan.lang.isKotlinObject
 import com.yandex.yatagan.lang.rt.kotlinObjectInstanceOrNull
 import com.yandex.yatagan.lang.rt.rawValue
 import com.yandex.yatagan.lang.rt.rt
@@ -311,11 +310,11 @@ internal class RuntimeComponent(
             collection.addAll(componentForGraph(upstream.owner)
                 .access(upstream, DependencyKind.Direct) as Collection<*>)
         }
-        for ((node: NodeModel, kind: MultiBinding.ContributionType) in binding.contributions) {
-            resolveAndAccessIfCondition(node)?.let { contribution ->
-                when (kind) {
-                    MultiBinding.ContributionType.Element -> collection.add(contribution)
-                    MultiBinding.ContributionType.Collection -> collection.addAll(contribution as Collection<*>)
+        for (contribution in binding.contributions) {
+            resolveAndAccessIfCondition(contribution.contributionDependency)?.let { value ->
+                when (contribution.contributionType) {
+                    MultiBinding.ContributionType.Element -> collection.add(value)
+                    MultiBinding.ContributionType.Collection -> collection.addAll(value as Collection<*>)
                 }
             }
         }
@@ -363,7 +362,7 @@ internal class RuntimeComponent(
                     "Provided module instance for $module is null"
                 }
             }
-            method.owner.isKotlinObject -> {
+            method.owner.isKotlinSingletonOrCompanion() -> {
                 method.owner.kotlinObjectInstanceOrNull()
             }
             else -> null

@@ -20,6 +20,7 @@ import com.yandex.yatagan.core.graph.BindingGraph
 import com.yandex.yatagan.core.graph.bindings.AliasBinding
 import com.yandex.yatagan.core.graph.bindings.BaseBinding
 import com.yandex.yatagan.core.graph.bindings.Binding
+import com.yandex.yatagan.core.model.ModuleHostedBindingModel
 import com.yandex.yatagan.core.model.ModuleModel
 import com.yandex.yatagan.core.model.NodeModel
 import com.yandex.yatagan.lang.HasPlatformModel
@@ -37,6 +38,7 @@ internal class SyntheticAliasBindingImpl(
         get() = sourceBinding.owner
 
     override val originModule: ModuleModel? get() = null
+    override val methodModel: ModuleHostedBindingModel? get() = null
     override fun <R> accept(visitor: BaseBinding.Visitor<R>): R {
         return visitor.visitAlias(this)
     }

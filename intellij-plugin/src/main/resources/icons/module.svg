@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+ <rect x="1" y="1" width="14" height="14" rx="7" fill="#77f96f" fill-opacity=".6"/>
+ <g fill="none" fill-rule="evenodd">
+  <text x="3.924459" y="11.208309" fill="#010101" font-size="8.99px" stroke-linecap="round" stroke-width=".749" xml:space="preserve"><tspan x="3.924459" y="11.208309" stroke-width=".749">M</tspan></text>
+ </g>
+</svg>

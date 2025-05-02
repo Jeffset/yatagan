@@ -4,8 +4,8 @@
     <vendor>Yandex LLC</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.java</depends>
-    <depends>org.jetbrains.kotlin</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <codeInsight.lineMarkerProvider
@@ -16,23 +16,43 @@
         <notificationGroup id="YG Notification Group"
                            displayType="BALLOON"/>
         <toolWindow
-                factoryClass="com.yandex.yatagan.intellij.ToolWindowFactoryImpl"
-                id="fpp.abr"
+                factoryClass="com.yandex.yatagan.intellij.ui.ToolWindowFactoryImpl"
+                id="Yatagan"
                 anchor="right"
+                icon="/icons/icon.svg"
+                doNotActivateOnStart="true"
                 secondary="true"
         />
     </extensions>
+    <projectListeners>
+        <listener class="com.yandex.yatagan.intellij.ui.ToolWindowListener"
+                  topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
+    </projectListeners>
     <actions>
-        <group id="Yatagan" text="Yatagan" description="Yatagan related actions">
-            <add-to-group group-id="MainMenu" anchor="after" relative-to-action="ToolsMenu"/>
+        <group id="com.yandex.yatagan.intellij.EditorPopupMenu"
+               class="com.yandex.yatagan.intellij.actions.YataganActionsGroup"
+               popup="true"
+               text="Yatagan">
+            <add-to-group group-id="EditorPopupMenu"/>
+            <action class="com.yandex.yatagan.intellij.actions.FindYataganBindingsAction"
+                    text="Find Bindings Across Components"
+                    icon="AllIcons.Actions.Find"
+            />
         </group>
-        <action id="com.yandex.yatagan.intellij.YataganBrowseModulesHierarchy"
-                class="com.yandex.yatagan.intellij.YataganBrowseModulesHierarchy" text="Show Yatagan Modules Hierarchy"
-                description="Shows Yatagan included modules hierarchy for a component or a module.">
-            <add-to-group group-id="Yatagan" anchor="last"/>
-        </action>
 
-        <action class="com.yandex.yatagan.intellij.SwitchFlattenedModulesAction" id="Yatagan.ModulesHierarchy.Flattened"/>
-        <action class="com.yandex.yatagan.intellij.SwitchModulesHierarchyAction" id="Yatagan.ModulesHierarchy.Hierarchy"/>
+<!--        <group id="Yatagan" text="Yatagan" description="Yatagan related actions">-->
+<!--            <add-to-group group-id="MainMenu" anchor="after" relative-to-action="ToolsMenu"/>-->
+<!--        </group>-->
+<!--        <action id="com.yandex.yatagan.intellij.BrowseModulesHierarchyAction"-->
+<!--                class="com.yandex.yatagan.intellij.actions.hierarchy.BrowseModulesHierarchyAction"-->
+<!--                text="Show Yatagan Modules Hierarchy"-->
+<!--                description="Shows Yatagan included modules hierarchy for a component or a module.">-->
+<!--            <add-to-group group-id="Yatagan" anchor="last"/>-->
+<!--        </action>-->
+
+<!--        <action class="com.yandex.yatagan.intellij.actions.hierarchy.SwitchFlattenedModulesAction"-->
+<!--                id="Yatagan.ModulesHierarchy.Flattened"/>-->
+<!--        <action class="com.yandex.yatagan.intellij.actions.hierarchy.SwitchModulesHierarchyAction"-->
+<!--                id="Yatagan.ModulesHierarchy.Hierarchy"/>-->
     </actions>
 </idea-plugin>

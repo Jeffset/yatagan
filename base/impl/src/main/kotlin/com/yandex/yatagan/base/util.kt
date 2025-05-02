@@ -25,6 +25,15 @@ inline fun <R> ifOrElseNull(condition: Boolean, block: () -> R): R? {
     return if (condition) block() else null
 }
 
+inline fun <T> T.wrapIf(condition: Boolean, wrap: (T) -> T): T {
+    contract { callsInPlace(wrap, InvocationKind.AT_MOST_ONCE) }
+    return if (condition) wrap(this) else this
+}
+
+inline fun <reified T : Any> Any?.castOrNull(): T? = this as? T
+
+inline fun <reified T : Any> Any.cast(): T = this as T
+
 inline fun <reified S : Any> loadServices(): List<S> {
     val serviceClass = S::class.java
     return ServiceLoader.load(serviceClass, serviceClass.classLoader).toList()

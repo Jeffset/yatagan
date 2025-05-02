@@ -21,6 +21,7 @@ import com.yandex.yatagan.base.api.StableForImplementation
 import com.yandex.yatagan.core.model.ComponentFactoryModel.InputPayload.Dependency
 import com.yandex.yatagan.core.model.ComponentFactoryModel.InputPayload.Instance
 import com.yandex.yatagan.core.model.ComponentFactoryModel.InputPayload.Module
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.validation.MayBeInvalid
 
@@ -88,7 +89,8 @@ public interface ComponentFactoryModel : MayBeInvalid {
      *
      * @see InputPayload
      */
-    public interface InputModel : MayBeInvalid {
+    public interface InputModel : MayBeInvalid, HasPlatformModel {
+
         /**
          * @see InputPayload
          */

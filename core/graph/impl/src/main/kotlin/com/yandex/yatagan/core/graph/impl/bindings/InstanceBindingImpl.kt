@@ -28,7 +28,7 @@ import com.yandex.yatagan.validation.format.modelRepresentation
 internal class InstanceBindingImpl(
     override val target: NodeModel,
     override val owner: BindingGraph,
-    private val origin: ComponentFactoryModel.InputModel,
+    override val origin: ComponentFactoryModel.InputModel,
 ) : InstanceBinding, BindingDefaultsMixin, ComparableByTargetBindingMixin {
 
     override fun <R> accept(visitor: Binding.Visitor<R>): R {

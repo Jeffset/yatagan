@@ -30,6 +30,9 @@ internal class ExplicitEmptyBindingImpl(
 ) : EmptyBinding, BindingDefaultsMixin, ModuleHostedBindingMixin() {
     override val conditionScope get() = ConditionScope.Never
 
+    override val isUnresolved: Boolean
+        get() = false
+
     override fun <R> accept(visitor: Binding.Visitor<R>): R {
         return visitor.visitEmpty(this)
     }

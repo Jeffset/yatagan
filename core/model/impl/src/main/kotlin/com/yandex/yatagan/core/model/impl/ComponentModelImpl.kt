@@ -174,7 +174,7 @@ internal class ComponentModelImpl private constructor(
             validator.reportError(Errors.nonComponent())
         }
 
-        if (declaration.kind != TypeDeclarationKind.Interface) {
+        if (!declaration.isInterface()) {
             validator.reportError(Errors.nonInterfaceComponent())
         }
     }

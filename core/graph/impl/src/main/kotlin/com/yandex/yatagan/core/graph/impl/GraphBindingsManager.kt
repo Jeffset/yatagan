@@ -95,8 +95,8 @@ internal class GraphBindingsManager(
         val bindingModelVisitor = ModuleHostedBindingsCreator()
 
         // Gather bindings from modules
-        val listBindings = linkedMapOf<NodeModel, MutableMap<MultiBindingImpl.Contribution, ContributionType>>()
-        val setBindings = linkedMapOf<NodeModel, MutableMap<MultiBindingImpl.Contribution, ContributionType>>()
+        val listBindings = linkedMapOf<NodeModel, MutableList<MultiBindingImpl.Contribution>>()
+        val setBindings = linkedMapOf<NodeModel, MutableList<MultiBindingImpl.Contribution>>()
         val mapBindings = linkedMapOf<MapSignature, MutableList<MapBindingImpl.Contribution>>()
         for (module: ModuleModel in graph.modules) {
             // All bindings from installed modules
@@ -109,21 +109,23 @@ internal class GraphBindingsManager(
                         val contribution = MultiBindingImpl.Contribution(
                             contributionDependency = binding.target,
                             origin = bindingModel,
+                            contributionType =  ContributionType.Element,
                         )
                         when(target.kind) {
                             CollectionTargetKind.List -> listBindings
                             CollectionTargetKind.Set -> setBindings
-                        }.getOrPut(target.node, ::mutableMapOf)[contribution] = ContributionType.Element
+                        }.getOrPut(target.node, ::arrayListOf).add(contribution)
                     }
                     is BindingTargetModel.FlattenMultiContribution -> {
                         val contribution = MultiBindingImpl.Contribution(
                             contributionDependency = binding.target,
                             origin = bindingModel,
+                            contributionType =  ContributionType.Collection,
                         )
                         when(target.kind) {
                             CollectionTargetKind.List -> listBindings
                             CollectionTargetKind.Set -> setBindings
-                        }.getOrPut(target.flattened, ::mutableMapOf)[contribution] = ContributionType.Collection
+                        }.getOrPut(target.flattened, ::arrayListOf).add(contribution)
                     }
                     is BindingTargetModel.MappingContribution -> {
                         target.keyType?.let { keyType ->
@@ -186,7 +188,7 @@ internal class GraphBindingsManager(
                         CollectionTargetKind.Set -> setBindings
                     }
                     model.elementType?.let { elementType ->
-                        bindings.getOrPut(elementType, ::mutableMapOf)
+                        bindings.getOrPut(elementType, ::arrayListOf)
                     }
                 }
 
@@ -294,7 +296,7 @@ internal class GraphBindingsManager(
     }
 
     private fun MutableList<BaseBinding>.addMultiBindings(
-        multiBindings: Map<NodeModel, MutableMap<MultiBindingImpl.Contribution, ContributionType>>,
+        multiBindings: Map<NodeModel, List<MultiBindingImpl.Contribution>>,
         multiBindingKind: CollectionTargetKind,
     ) {
         for ((target: NodeModel, contributions) in multiBindings) {

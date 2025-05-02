@@ -26,7 +26,6 @@ import com.yandex.yatagan.core.model.allInputs
 import com.yandex.yatagan.lang.BuiltinAnnotation
 import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Parameter
-import com.yandex.yatagan.lang.isKotlinObject
 import com.yandex.yatagan.lang.scope.invoke
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
@@ -40,7 +39,7 @@ internal abstract class ComponentFactoryModelBase : ComponentFactoryModel {
 
     override val factoryInputs: Collection<FactoryInputModel> by lazy {
         factoryMethod?.parameters?.map { param ->
-            object : FactoryInputModel {
+            object : FactoryInputModel, HasPlatformModel by param {
                 override val payload: InputPayload by lazy(PUBLICATION) {
                     InputPayload(
                         param = param,
@@ -142,7 +141,7 @@ internal abstract class ComponentFactoryModelBase : ComponentFactoryModel {
                         addNote(Strings.Notes.undeclaredModulePresent())
                     } else {
                         assert(!model.requiresInstance)
-                        if (model.type.declaration.isKotlinObject) {
+                        if (model.type.declaration.isKotlinSingletonOrCompanion()) {
                             addNote(Strings.Notes.objectModuleInBuilder())
                         } else {
                             addNote(Strings.Notes.moduleDoesNotRequireInstance())

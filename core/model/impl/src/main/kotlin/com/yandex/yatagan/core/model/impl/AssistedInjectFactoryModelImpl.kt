@@ -107,7 +107,7 @@ internal class AssistedInjectFactoryModelImpl private constructor(
         validator.child(asNode())
         assistedInjectClassConditionalModel?.let(validator::child)
 
-        if (impl.kind != TypeDeclarationKind.Interface) {
+        if (!impl.isInterface()) {
             validator.reportError(Strings.Errors.assistedInjectFactoryNotInterface())
         }
 

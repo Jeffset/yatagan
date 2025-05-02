@@ -27,6 +27,10 @@ import com.yandex.yatagan.validation.MayBeInvalid
  */
 public interface MultiBindingDeclarationModel : MayBeInvalid {
 
+    public val owner: ModuleModel
+
+    public val method: Method
+
     public fun <R> accept(visitor: Visitor<R>): R
 
     @StableForImplementation
@@ -74,6 +78,5 @@ public interface MultiBindingDeclarationModel : MayBeInvalid {
      * Denotes invalid [com.yandex.yatagan.Multibinds] with unrecognized return value.
      */
     public interface InvalidDeclarationModel : MultiBindingDeclarationModel {
-        public val invalidMethod: Method
     }
 }

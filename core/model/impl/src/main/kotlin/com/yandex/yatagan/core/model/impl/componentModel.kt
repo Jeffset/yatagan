@@ -18,6 +18,9 @@ package com.yandex.yatagan.core.model.impl
 
 import com.yandex.yatagan.core.model.ComponentModel
 import com.yandex.yatagan.core.model.ModuleModel
+import com.yandex.yatagan.core.model.NodeModel
+import com.yandex.yatagan.lang.Annotation
+import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.lang.TypeDeclaration
 import com.yandex.yatagan.lang.scope.invoke
 
@@ -25,6 +28,14 @@ fun ComponentModel(declaration: TypeDeclaration): ComponentModel {
     return ComponentModelImpl(declaration)
 }
 
+fun ComponentModel(declaration: TypeDeclaration, strict: Boolean): ComponentModel? {
+    return ComponentModel(declaration).takeIf { !strict || ComponentModelImpl.canRepresent(declaration) }
+}
+
 fun ModuleModel(declaration: TypeDeclaration): ModuleModel {
     return ModuleModelImpl(declaration)
+}
+
+fun NodeModel(type: Type, qualifier: Annotation? = null): NodeModel {
+    return NodeModelImpl(type = type, qualifier = qualifier)
 }

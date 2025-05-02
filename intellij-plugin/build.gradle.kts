@@ -1,6 +1,6 @@
 plugins {
     id("yatagan.base-module")
-    id("org.jetbrains.intellij") version "1.13.3"
+    id("org.jetbrains.intellij") version "1.17.3"
 //    `java-test-fixtures`
 }
 
@@ -23,14 +23,28 @@ kotlin {
 intellij {
 //    version.set("2023.1.2")
 //    type.set("IC")
-    localPath.set("/home/jeffset/.local/share/JetBrains/Toolbox/apps/IDEA-U/ch-0/232.6095.10")
-    type.set("IU")
+    pluginName = "yatagan"
+    version = "231.9414.13"
+    type = "IC"
 
-    plugins.set(pluginsList)
+    plugins = listOf(
+        "com.intellij.java",
+        "org.jetbrains.kotlin",
+    )
+
+    instrumentCode = false
+}
+
+kotlin {
+    sourceSets.matching { it.name == "main" || it.name == "testDriver" }.configureEach {
+        languageSettings {
+            optIn("com.yandex.yatagan.base.api.Internal")
+        }
+    }
 }
 
 dependencies {
-    implementation(project(":base"))
+    implementation(project(":base:impl"))
     implementation(project(":lang:compiled"))
     implementation(project(":core:model:impl"))
     implementation(project(":core:graph:impl"))
@@ -120,4 +134,9 @@ artifacts {
 
 tasks.runIde {
     maxHeapSize = "4G"
+}
+
+tasks.patchPluginXml {
+    sinceBuild = "231"
+    untilBuild = "242.*"
 }

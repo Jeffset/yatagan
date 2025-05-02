@@ -21,7 +21,10 @@ import com.yandex.yatagan.core.graph.BindingGraph
 import com.yandex.yatagan.core.model.AssistedInjectFactoryModel
 import com.yandex.yatagan.core.model.CollectionTargetKind
 import com.yandex.yatagan.core.model.ComponentDependencyModel
+import com.yandex.yatagan.core.model.ComponentFactoryModel
 import com.yandex.yatagan.core.model.InjectedConditionExpressionModel
+import com.yandex.yatagan.core.model.ModuleHostedBindingModel
+import com.yandex.yatagan.core.model.MultiBindingDeclarationModel
 import com.yandex.yatagan.core.model.NodeDependency
 import com.yandex.yatagan.core.model.NodeModel
 import com.yandex.yatagan.lang.Annotation
@@ -94,13 +97,17 @@ public interface ComponentInstanceBinding : Binding
  * Also, binding that can not be satisfied - it's codegen or runtime evaluation is *unreached*.
  * Empty [com.yandex.yatagan.Binds] binding is an example of such a binding.
  */
-public interface EmptyBinding : Binding
+public interface EmptyBinding : Binding {
+    public val isUnresolved: Boolean
+}
 
 /**
  * A [com.yandex.yatagan.BindsInstance] binding.
  * Introduced into a graph as [com.yandex.yatagan.core.model.ComponentFactoryModel.InputModel].
  */
-public interface InstanceBinding : Binding
+public interface InstanceBinding : Binding {
+    public val origin: ComponentFactoryModel.InputModel
+}
 
 /**
  * Map multi-binding [com.yandex.yatagan.IntoMap].
@@ -127,6 +134,8 @@ public interface MapBinding : ExtensibleBinding<MapBinding> {
          * A dependency which resolves to a contribution for the key.
          */
         public val dependency: NodeDependency
+
+        public val origin: ModuleHostedBindingModel
     }
 }
 
@@ -139,7 +148,7 @@ public interface MultiBinding : ExtensibleBinding<MultiBinding> {
     /**
      * All list contributions.
      */
-    public val contributions: Map<NodeModel, ContributionType>
+    public val contributions: Collection<Contribution>
 
     /**
      * Target collection kind.
@@ -157,6 +166,12 @@ public interface MultiBinding : ExtensibleBinding<MultiBinding> {
          */
         Collection,
     }
+
+    public interface Contribution {
+        public val contributionDependency: NodeModel
+        public val origin: ModuleHostedBindingModel
+        public val contributionType: ContributionType
+    }
 }
 
 /**
@@ -166,6 +181,7 @@ public interface ProvisionBinding : Binding {
     public val provision: Callable
     public val inputs: List<NodeDependency>
     public val requiresModuleInstance: Boolean
+    public val isInjectConstructor: Boolean
 }
 
 /**

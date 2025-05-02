@@ -16,6 +16,7 @@
 
 package com.yandex.yatagan.core.graph.impl.bindings
 
+import com.yandex.yatagan.base.ListComparator
 import com.yandex.yatagan.base.MapComparator
 import com.yandex.yatagan.core.graph.BindingGraph
 import com.yandex.yatagan.core.graph.bindings.Binding
@@ -23,6 +24,7 @@ import com.yandex.yatagan.core.graph.bindings.MultiBinding
 import com.yandex.yatagan.core.graph.impl.topologicalSort
 import com.yandex.yatagan.core.model.CollectionTargetKind
 import com.yandex.yatagan.core.model.ModuleHostedBindingModel
+import com.yandex.yatagan.core.model.MultiBindingDeclarationModel
 import com.yandex.yatagan.core.model.NodeModel
 import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.validation.MayBeInvalid
@@ -38,40 +40,41 @@ internal class MultiBindingImpl(
     override val upstream: MultiBindingImpl?,
     override val targetForDownstream: NodeModel,
     override val kind: CollectionTargetKind,
-    contributions: Map<Contribution, MultiBinding.ContributionType>,
+    contributions: List<Contribution>,
 ) : MultiBinding, BindingDefaultsMixin, ComparableBindingMixin<MultiBindingImpl> {
     private val _contributions = contributions
 
     data class Contribution(
-        val contributionDependency: NodeModel,
-        val origin: ModuleHostedBindingModel,
-    ) : Comparable<Contribution> {
+        override val contributionDependency: NodeModel,
+        override val origin: ModuleHostedBindingModel,
+        override val contributionType: MultiBinding.ContributionType,
+    ) : Comparable<Contribution>, MultiBinding.Contribution {
         override fun compareTo(other: Contribution): Int {
             return origin.method.compareTo(other.origin.method)
         }
     }
 
-    override val contributions: Map<NodeModel, MultiBinding.ContributionType> by lazy {
+    override val contributions: Collection<Contribution> by lazy {
         when (kind) {
             CollectionTargetKind.List -> {
                 // Resolve aliases as multi-bindings often work with @Binds
-                val resolved = _contributions.mapKeys { (contribution, _) ->
+                val resolved: Map<NodeModel, Contribution> = _contributions.associateBy { contribution ->
                     owner.resolveBinding(contribution.contributionDependency).target
                 }
                 topologicalSort(
                     nodes = resolved.keys,
                     inside = owner,
-                ).associateWith(resolved::getValue)
+                ).map(resolved::getValue)
             }
 
             CollectionTargetKind.Set -> {
-                _contributions.mapKeys { it.key.contributionDependency }
+                _contributions
             }
         }
     }
 
     override val dependencies get() = extensibleAwareDependencies(
-        _contributions.keys.map { it.contributionDependency })
+        _contributions.map { it.contributionDependency })
 
     override fun toString(childContext: MayBeInvalid?) = bindingModelRepresentation(
         modelClassName = when(kind) {
@@ -90,7 +93,7 @@ internal class MultiBindingImpl(
             var elements = 0
             var collections = 0
             var mentionUpstream = false
-            for (dependency in dependencies) when(contributions[dependency.node]) {
+            for (dependency in dependencies) when(contributions.find { it.contributionDependency == dependency}?.contributionType) {
                 MultiBinding.ContributionType.Element -> elements++
                 MultiBinding.ContributionType.Collection -> collections++
                 null -> mentionUpstream = (dependency.node == upstream?.targetForDownstream)
@@ -121,7 +124,7 @@ internal class MultiBindingImpl(
     )
 
     override fun compareTo(other: MultiBindingImpl): Int {
-        return MapComparator.ofComparable<Contribution, MultiBinding.ContributionType>()
+        return ListComparator.ofComparable<Contribution>(asSorted = false)
             .compare(_contributions, other._contributions)
     }
 

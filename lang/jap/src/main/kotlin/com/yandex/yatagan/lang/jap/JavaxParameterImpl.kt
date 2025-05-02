@@ -26,7 +26,7 @@ import kotlin.LazyThreadSafetyMode.PUBLICATION
 
 internal class JavaxParameterImpl(
     lexicalScope: LexicalScope,
-    private val platformModel: VariableElement,
+    override val platformModel: VariableElement,
     refinedType: TypeMirror,
 ) : CtParameterBase(), CtAnnotated by JavaxAnnotatedImpl(lexicalScope, platformModel), LexicalScope by lexicalScope {
     override val name: String get() = platformModel.simpleName.toString()

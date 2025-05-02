@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    api(project(":base"))
+    api(project(":base:impl"))
     api(project(":core:model:api"))
     api(project(":core:graph:api"))
     api(project(":validation:api"))

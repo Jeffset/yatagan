@@ -46,6 +46,9 @@ internal interface IntrinsicBindingMarker
 internal interface BaseBindingDefaultsMixin : BaseBinding {
     override val originModule: ModuleModel?
         get() = null
+
+    override val methodModel: ModuleHostedBindingModel?
+        get() = null
 }
 
 internal interface BindingDefaultsMixin : Binding, BaseBindingDefaultsMixin {
@@ -189,6 +192,8 @@ internal abstract class ModuleHostedBindingMixin :
     abstract val impl: ModuleHostedBindingModel
 
     final override val originModule get() = impl.originModule
+
+    final override val methodModel get() = impl
 
     final override val target: NodeModel by lazy(LazyThreadSafetyMode.PUBLICATION) {
         when (val target = impl.target) {

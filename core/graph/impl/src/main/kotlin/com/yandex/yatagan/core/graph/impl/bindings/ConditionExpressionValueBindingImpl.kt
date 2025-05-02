@@ -24,6 +24,7 @@ import com.yandex.yatagan.core.model.ConditionModel
 import com.yandex.yatagan.core.model.ConditionScope
 import com.yandex.yatagan.core.model.InjectedConditionExpressionModel
 import com.yandex.yatagan.core.model.NodeModel
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
 
@@ -55,6 +56,9 @@ internal class ConditionExpressionValueBindingImpl(
 
     override val nonStaticConditionProviders: Set<NodeModel>
         get() = nonStaticConditionDependencies.conditionProviders
+
+    override val langModel: HasPlatformModel?
+        get() = model.langModel
 
     override fun toString(childContext: MayBeInvalid?) = model.toString(childContext)
 }

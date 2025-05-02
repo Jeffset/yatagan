@@ -40,6 +40,7 @@ import com.yandex.yatagan.core.model.NodeModel
 import com.yandex.yatagan.core.model.ScopeModel
 import com.yandex.yatagan.core.model.Variant
 import com.yandex.yatagan.core.model.accept
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.scope.FactoryKey
 import com.yandex.yatagan.lang.scope.LexicalScope
 import com.yandex.yatagan.lang.scope.caching

@@ -76,10 +76,7 @@ private class CreationGeneratorVisitor(
                     if (instance != null) {
                         +"%L.%N(".formatCode(instance, method.name)
                     } else {
-                        val ownerObject = when (method.owner.kind) {
-                            TypeDeclarationKind.KotlinObject -> ".INSTANCE"
-                            else -> ""
-                        }
+                        val ownerObject = if (method.owner.isKotlinSingleton()) ".INSTANCE" else ""
                         +"%T%L.%L(".formatCode(method.ownerName.asTypeName(), ownerObject, method.name)
                     }
                     genArgs()

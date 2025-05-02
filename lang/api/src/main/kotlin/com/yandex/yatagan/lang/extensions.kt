@@ -26,12 +26,6 @@ import com.yandex.yatagan.lang.scope.LexicalScope
 public val LexicalScope.Extensions.langFactory: LangModelFactory
     get() = get(LangModelFactory)
 
-public val TypeDeclaration.isKotlinObject: Boolean
-    get() = when (kind) {
-        TypeDeclarationKind.KotlinObject, TypeDeclarationKind.KotlinCompanion -> true
-        else -> false
-    }
-
 public val TypeDeclaration.functionsWithCompanion: Sequence<Method>
     get() = when (val companion = defaultCompanionObjectDeclaration) {
         null -> methods

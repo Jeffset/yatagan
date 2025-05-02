@@ -18,6 +18,7 @@ package com.yandex.yatagan.core.model.impl
 
 import com.yandex.yatagan.base.setOf
 import com.yandex.yatagan.core.model.CollectionTargetKind
+import com.yandex.yatagan.core.model.ModuleModel
 import com.yandex.yatagan.core.model.MultiBindingDeclarationModel
 import com.yandex.yatagan.core.model.NodeModel
 import com.yandex.yatagan.lang.HasPlatformModel
@@ -33,7 +34,8 @@ import com.yandex.yatagan.validation.format.reportError
 import kotlin.LazyThreadSafetyMode.PUBLICATION
 
 internal abstract class MultiBindingDeclarationBase(
-    protected val method: Method,
+    override val owner: ModuleModel,
+    override val method: Method,
 ) : MultiBindingDeclarationModel {
     override fun validate(validator: Validator) {
         if (!method.isAbstract || method.parameters.any()) {
@@ -48,8 +50,9 @@ internal abstract class MultiBindingDeclarationBase(
 }
 
 internal class CollectionDeclarationImpl(
+    owner: ModuleModel,
     method: Method,
-) : MultiBindingDeclarationBase(method), MultiBindingDeclarationModel.CollectionDeclarationModel {
+) : MultiBindingDeclarationBase(owner, method), MultiBindingDeclarationModel.CollectionDeclarationModel {
     init {
         assert(canRepresent(method))
     }
@@ -115,8 +118,9 @@ internal class CollectionDeclarationImpl(
 }
 
 internal class MapDeclarationImpl(
+    owner: ModuleModel,
     method: Method,
-) : MultiBindingDeclarationBase(method), MultiBindingDeclarationModel.MapDeclarationModel {
+) : MultiBindingDeclarationBase(owner, method), MultiBindingDeclarationModel.MapDeclarationModel {
     init {
         assert(canRepresent(method))
     }
@@ -163,15 +167,16 @@ internal class MapDeclarationImpl(
 }
 
 internal class InvalidDeclarationImpl(
-    override val invalidMethod: Method,
+    override val owner: ModuleModel,
+    override val method: Method,
 ) : MultiBindingDeclarationModel.InvalidDeclarationModel {
     override fun <R> accept(visitor: MultiBindingDeclarationModel.Visitor<R>): R {
         return visitor.visitInvalid(this)
     }
 
-    override fun hashCode(): Int = invalidMethod.hashCode()
+    override fun hashCode(): Int = method.hashCode()
     override fun equals(other: Any?) = this === other || (other is InvalidDeclarationImpl &&
-            invalidMethod == other.invalidMethod)
+            method == other.method)
 
     override fun validate(validator: Validator) {
         validator.reportError(Strings.Errors.invalidMultiBindingDeclaration()) {
@@ -182,10 +187,10 @@ internal class InvalidDeclarationImpl(
     override fun toString(childContext: MayBeInvalid?): CharSequence {
         return modelRepresentation(modelClassName = "multibinding declaration") {
             color = TextColor.Red
-            append("invalid `").append(invalidMethod).append('`')
+            append("invalid `").append(method).append('`')
         }
     }
 
     override val langModel: HasPlatformModel
-        get() = invalidMethod
+        get() = method
 }

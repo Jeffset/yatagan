@@ -23,6 +23,7 @@ import com.yandex.yatagan.core.graph.bindings.Binding
 import com.yandex.yatagan.core.graph.bindings.MapBinding
 import com.yandex.yatagan.core.graph.impl.mergeMultiMapsForDuplicateCheck
 import com.yandex.yatagan.core.model.ModuleHostedBindingModel
+import com.yandex.yatagan.core.model.MultiBindingDeclarationModel
 import com.yandex.yatagan.core.model.NodeDependency
 import com.yandex.yatagan.core.model.NodeModel
 import com.yandex.yatagan.lang.Annotation
@@ -51,7 +52,7 @@ internal class MapBindingImpl(
     data class Contribution(
         override val keyValue: Annotation.Value,
         override val dependency: NodeDependency,
-        val origin: ModuleHostedBindingModel,
+        override val origin: ModuleHostedBindingModel,
     ) : MapBinding.Contribution, Comparable<Contribution> {
         override fun compareTo(other: Contribution): Int {
             return origin.method.compareTo(other.origin.method)

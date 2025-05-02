@@ -82,7 +82,7 @@ internal class ComponentFactoryWithBuilderModelImpl private constructor(
 
         validator.inline(asNode())
 
-        if (factoryDeclaration.kind != TypeDeclarationKind.Interface) {
+        if (!factoryDeclaration.isInterface()) {
             validator.reportError(Strings.Errors.nonInterfaceCreator())
         }
 
@@ -132,7 +132,8 @@ internal class ComponentFactoryWithBuilderModelImpl private constructor(
         }
     }
 
-    private inner class BuilderInputModelImpl(private val method: Method) : BuilderInputModel {
+    private inner class BuilderInputModelImpl(private val method: Method) : BuilderInputModel, HasPlatformModel by method {
+
         override val payload: ComponentFactoryModel.InputPayload by lazy(LazyThreadSafetyMode.PUBLICATION) {
             InputPayload(
                 param = method.parameters.first(),

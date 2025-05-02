@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <g fill-rule="evenodd">
+  <rect x="1" y="1" width="14" height="14" rx="3" fill="#c7c617" fill-opacity=".85" stroke="#000" stroke-opacity=".5"/>
+  <text x="3.4167039" y="10.498347" fill="#010101" font-size="8.99px" stroke-linecap="round" stroke-width=".749" xml:space="preserve"><tspan x="3.4167039" y="10.498347" stroke-width=".749">{:}</tspan></text>
+  <path transform="rotate(110 11.2 3.51)" d="m13 4.01-1.52-0.569-1 1.27-0.265-1.6-1.6-0.23 1.25-1.03-0.602-1.5 1.52 0.569 1-1.27 0.265 1.6 1.6 0.23-1.25 1.03z" display="none" fill="#ff75f8" stroke="#000" stroke-linecap="round" stroke-opacity=".75"/>
+  <circle cx="8" cy="8" r="2.36" display="none" fill-opacity=".85"/>
+ </g>
+ <path d="m3.64 8.93-3.5 3.5 3.5 3.5 3.5-3.5zm-1.24 3.5 1.24-1.24 1.24 1.24-1.24 1.24z" display="none" fill="#cfd5d9" fill-rule="evenodd"/>
+</svg>

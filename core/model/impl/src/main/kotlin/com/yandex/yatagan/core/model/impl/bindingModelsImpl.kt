@@ -34,7 +34,6 @@ import com.yandex.yatagan.lang.BuiltinAnnotation
 import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.lang.getCollectionType
-import com.yandex.yatagan.lang.isKotlinObject
 import com.yandex.yatagan.lang.langFactory
 import com.yandex.yatagan.validation.MayBeInvalid
 import com.yandex.yatagan.validation.Validator
@@ -277,7 +276,7 @@ internal class ProvidesImpl(
     }
 
     override val requiresModuleInstance: Boolean
-        get() = !method.isAbstract && !method.isStatic && !method.owner.isKotlinObject
+        get() = !method.isAbstract && !method.isStatic && !method.owner.isKotlinSingletonOrCompanion()
 
     override fun <R> accept(visitor: ModuleHostedBindingModel.Visitor<R>): R {
         return visitor.visitProvides(this)

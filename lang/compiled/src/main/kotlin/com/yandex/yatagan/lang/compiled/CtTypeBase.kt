@@ -25,6 +25,6 @@ import com.yandex.yatagan.lang.common.TypeBase
 abstract class CtTypeBase : TypeBase(), CtNamedType {
     final override fun toString() = nameModel.toString()
 
-    final override val isUnresolved: Boolean
+    override val isUnresolved: Boolean
         get() = false
 }

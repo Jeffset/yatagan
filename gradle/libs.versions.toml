@@ -41,3 +41,4 @@ testing-junit4 = "junit:junit:4.13.2"
 testing-assertj = "org.assertj:assertj-core:3.26.0"
 testing-dagger-api =  { module = "com.google.dagger:dagger", version.ref = "dagger" }
 testing-dagger-processor =  { module = "com.google.dagger:dagger-compiler", version.ref = "dagger" }
+kotlinx-coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0-RC"

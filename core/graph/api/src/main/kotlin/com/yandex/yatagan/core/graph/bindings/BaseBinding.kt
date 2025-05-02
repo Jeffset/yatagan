@@ -18,6 +18,7 @@ package com.yandex.yatagan.core.graph.bindings
 
 import com.yandex.yatagan.base.api.StableForImplementation
 import com.yandex.yatagan.core.graph.BindingGraph
+import com.yandex.yatagan.core.model.ModuleHostedBindingModel
 import com.yandex.yatagan.core.model.ModuleModel
 import com.yandex.yatagan.core.model.NodeModel
 import com.yandex.yatagan.validation.MayBeInvalid
@@ -42,6 +43,8 @@ public interface BaseBinding : MayBeInvalid, Comparable<BaseBinding> {
      * If it's intrinsic - `null` is returned.
      */
     public val originModule: ModuleModel?
+
+    public val methodModel: ModuleHostedBindingModel?
 
     public fun <R> accept(visitor: Visitor<R>): R
 

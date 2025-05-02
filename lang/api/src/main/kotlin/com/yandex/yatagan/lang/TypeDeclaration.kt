@@ -33,6 +33,21 @@ public interface TypeDeclaration : Annotated, HasPlatformModel, Accessible, Comp
      */
     public val kind: TypeDeclarationKind
 
+    public fun isInterface(): Boolean {
+        return kind == TypeDeclarationKind.Interface
+    }
+
+    public fun isKotlinSingleton(): Boolean {
+        return kind == TypeDeclarationKind.KotlinObject
+    }
+
+    public fun isKotlinSingletonOrCompanion(): Boolean {
+        return when(kind) {
+            TypeDeclarationKind.KotlinObject, TypeDeclarationKind.KotlinCompanion -> true
+            else -> false
+        }
+    }
+
     /**
      * Whether the declaration is abstract (abstract class or interface).
      */

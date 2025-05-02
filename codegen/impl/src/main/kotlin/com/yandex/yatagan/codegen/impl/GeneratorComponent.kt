@@ -27,12 +27,25 @@ internal annotation class SubcomponentsNamespace
 @ConditionExpression("getEnableDaggerCompatMode", ComponentGenerator.Options::class)
 internal annotation class DaggerCompatEnabled
 
+@Component(isRoot = true, modules = [Mm::class])
+internal interface Gen {
+    val g: ComponentGenerator
+}
+
+@Module
+internal interface Mm {
+    @Binds
+    fun binds(): ComponentGenerator
+}
+
 @Singleton
 @Component(modules = [
     GeneratorComponent.GutsModule::class,
     GeneratorComponent.ContributorsModule::class,
 ])
 internal interface GeneratorComponent {
+    val sub: Gen
+
     val generator: ComponentGenerator
 
     val implementationClassName: ClassName

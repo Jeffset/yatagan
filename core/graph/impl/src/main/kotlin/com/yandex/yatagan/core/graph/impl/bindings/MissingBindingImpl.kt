@@ -47,6 +47,9 @@ internal data class MissingBindingImpl(
         //  - binding exists in a sibling component hierarchy path
     }
 
+    override val isUnresolved: Boolean
+        get() = true
+
     override fun <R> accept(visitor: Binding.Visitor<R>): R {
         return visitor.visitEmpty(this)
     }

@@ -18,11 +18,11 @@ package com.yandex.yatagan.core.model.impl
 
 import com.yandex.yatagan.core.model.NodeModel
 import com.yandex.yatagan.lang.Field
+import com.yandex.yatagan.lang.HasPlatformModel
 import com.yandex.yatagan.lang.Member
 import com.yandex.yatagan.lang.Method
 import com.yandex.yatagan.lang.Type
 import com.yandex.yatagan.lang.TypeDeclaration
-import com.yandex.yatagan.lang.isKotlinObject
 import com.yandex.yatagan.lang.scope.FactoryKey
 import com.yandex.yatagan.lang.scope.LexicalScope
 import com.yandex.yatagan.lang.scope.caching
@@ -54,6 +54,9 @@ internal class ConditionModelImpl private constructor(
             qualifier = null,
         )
 
+    override val langModel: HasPlatformModel?
+        get() = model.langModel
+
     override val path: List<Member> by lazy {
         buildList {
             pathSource.splitToSequence('.').foldIndexed(type) { index, currentType, name ->
@@ -84,7 +87,7 @@ internal class ConditionModelImpl private constructor(
             if (path.last().accept(MemberTypeVisitor).asBoxed().declaration.qualifiedName != Names.Boolean) {
                 validator.reportError(Strings.Errors.invalidConditionNoBoolean())
             }
-            if (!path.first().isStatic && type.declaration.isKotlinObject) {
+            if (!path.first().isStatic && type.declaration.isKotlinSingletonOrCompanion()) {
                 validator.reportWarning(Strings.Warnings.nonStaticConditionOnKotlinObject())
             }
             path.forEach { member ->
@@ -122,6 +125,9 @@ internal class ConditionModelImpl private constructor(
 
         override val requiresInstance: Boolean
             get() = false
+
+        override val langModel: HasPlatformModel?
+            get() = null
 
         override fun validate(validator: Validator) {
             validator.reportError(Strings.Errors.invalidCondition(expression = invalidExpression))

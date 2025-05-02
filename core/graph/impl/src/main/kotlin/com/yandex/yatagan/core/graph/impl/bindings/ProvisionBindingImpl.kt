@@ -36,6 +36,7 @@ internal class ProvisionBindingImpl(
     override val provision get() = impl.method
     override val inputs get() = impl.inputs
     override val requiresModuleInstance get() = impl.requiresModuleInstance
+    override val isInjectConstructor: Boolean get() = false
     override val variantMatch: VariantMatch by lazy { VariantMatch(impl, owner.variant) }
 
     override val dependencies by lazy(LazyThreadSafetyMode.PUBLICATION) {
